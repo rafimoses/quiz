@@ -1,0 +1,27 @@
+{
+  "series_title": "סדרת חידוני עברית",
+  "quiz_number": 1,
+  "quiz_title": "חידון לדוגמה",
+  "questions": [
+    {
+      "question": "מהי הצורה הנכונה של המילה?",
+      "answers": [
+        { "text": "אִמָּא", "correct": false },
+        { "text": "אִמָא", "correct": false },
+        { "text": "אִמָּהּ", "correct": true },
+        { "text": "אִמַא", "correct": false }
+      ],
+      "explanation": "הצורה התקנית היא ++אִמָּהּ++ ולא --אִמָּא--. הכתיב המלא כולל ה׳ בסוף המילה."
+    },
+    {
+      "question": "סמנו את כל צורות הרבים התקניות (יותר מתשובה אחת נכונה).",
+      "answers": [
+        { "text": "חֲלוֹנוֹת", "correct": true },
+        { "text": "חַלּוֹנוֹת", "correct": true },
+        { "text": "חֲלֹנוֹת", "correct": false },
+        { "text": "חַלוֹנִים", "correct": false }
+      ],
+      "explanation": ""
+    }
+  ]
+}
