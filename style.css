@@ -1,3 +1,4 @@
+/* STYLE UPDATE MARK 2026-02-15 */
 :root {
     --primary-color: #6b8fb3;
     --badge-width: 34px;
@@ -14,9 +15,9 @@
 body {
     font-family: "Heebo", "Segoe UI", Arial, sans-serif;
     font-size: 16px;
-    line-height: 1.7;
+    line-height: 1.65;
     color: #333333;
-    background-color: #ffffff;
+    background-color: #f7f8fa;
     direction: rtl;
     text-align: right;
 }
@@ -24,13 +25,36 @@ body {
 #app {
     max-width: 700px;
     margin: 0 auto;
-    padding: 40px 24px;
+    padding: 48px 40px;
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+/* Screen fade-in (on new screen creation) */
+
+@keyframes screenFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.screen {
+    animation: screenFadeIn 320ms ease-out;
+    opacity: 1;
+    transition: opacity 320ms ease-out;
+}
+
+/* Fade-out class for question→feedback transition */
+
+.screen.fade-out {
+    opacity: 0;
+    transition: opacity 260ms ease-out;
 }
 
 /* Opening Screen */
 
 .opening-screen {
-    padding-top: 80px;
+    padding: 24px 0;
     text-align: center;
 }
 
@@ -80,6 +104,7 @@ button {
     border-radius: 6px;
     cursor: pointer;
     display: inline-block;
+    transition: background-color 180ms ease-out, color 180ms ease-out, filter 180ms ease-out;
 }
 
 .start-button,
@@ -94,6 +119,11 @@ button {
 .next-button:hover {
     background-color: var(--primary-color);
     filter: brightness(0.9);
+}
+
+.start-button:active,
+.next-button:active {
+    filter: brightness(0.82);
 }
 
 .confirm-button {
@@ -116,6 +146,10 @@ button {
     filter: brightness(0.9);
 }
 
+.confirm-button:not(:disabled):active {
+    filter: brightness(0.82);
+}
+
 .confirm-button,
 .next-button {
     display: block;
@@ -134,12 +168,12 @@ button {
 /* Progress Indicator */
 
 .progress-container {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 
 .progress-text {
-    font-size: 1rem;
-    color: #666666;
+    font-size: 0.95rem;
+    color: #888888;
     display: block;
     margin-bottom: 6px;
 }
@@ -147,7 +181,7 @@ button {
 .progress-bar {
     width: 100%;
     height: 2px;
-    background-color: #eeeeee;
+    background-color: #e8e8e8;
     border-radius: 2px;
     overflow: hidden;
 }
@@ -156,77 +190,105 @@ button {
     height: 100%;
     background-color: var(--primary-color);
     border-radius: 1px;
-    transition: width 0.3s;
+    transition: width 420ms ease-out;
 }
 
-/* Image Frame / Flip Card */
+/* Optional Question Image */
+
+.question-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-bottom: 28px;
+}
+
+/* Feedback Result (flat, compact — no flip animation) */
 
 .flip-container {
-    perspective: 1000px;
+    perspective: none;
     width: 100%;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    padding-right: calc(var(--badge-width) + var(--badge-gap));
 }
 
 .flip-card {
     position: relative;
     width: 100%;
-    height: 300px;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
+    height: auto;
+    transform: none !important;
+    transform-style: flat;
 }
 
-.flip-card.flipped {
-    transform: rotateY(180deg);
+.flip-front {
+    display: none;
 }
 
-.flip-front,
 .flip-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border: 1px solid #dddddd;
-    display: flex;
+    position: static;
+    width: auto;
+    height: auto;
+    backface-visibility: visible;
+    transform: none;
+    border: none;
+    background: none;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    background-color: #fafafa;
-    overflow: hidden;
+    justify-content: flex-start;
+    gap: 6px;
+    overflow: visible;
+    padding: 0;
 }
 
-.flip-front img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.flip-back {
-    transform: rotateY(180deg);
-}
-
-/* Result on Card Back */
-
-.result-content {
-    font-size: clamp(1.2rem, 3vw, 1.6rem);
-    text-align: center;
-    direction: rtl;
-}
-
-.result-symbol {
-    font-size: clamp(1.8rem, 5vw, 2.8rem);
-    vertical-align: middle;
-}
-
-.result-feedback {
-    vertical-align: middle;
-}
+/* Result Feedback — Positive (celebratory but restrained) */
 
 .result-correct {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.35rem;
+    font-weight: 500;
+    text-align: right;
+    direction: rtl;
     color: #2e7d32;
 }
 
+.result-correct .result-symbol {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.result-correct .result-feedback {
+    line-height: 1.5;
+}
+
+/* Positive Feedback Pulse (single, no reflow) */
+
+@keyframes positivePulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+.positive-pulse {
+    animation: positivePulse 340ms ease-out 1;
+    transform-origin: center;
+}
+
+/* Result Feedback — Negative (compact) */
+
 .result-incorrect {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.05rem;
+    text-align: right;
+    direction: rtl;
     color: #c62828;
+}
+
+.result-incorrect .result-feedback {
+    line-height: 1.65;
 }
 
 /* Question Header */
@@ -235,12 +297,12 @@ button {
     display: flex;
     align-items: baseline;
     gap: var(--badge-gap);
-    margin-bottom: 24px;
+    margin-bottom: 28px;
     padding-right: 0;
 }
 
 .question-badge {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: normal;
     color: #333333;
     border: 2px solid var(--primary-color);
@@ -256,8 +318,9 @@ button {
 }
 
 .question-text {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: normal;
+    line-height: 1.65;
 }
 
 /* Answer Options */
@@ -322,13 +385,14 @@ button {
 }
 
 .answer-text {
-    font-size: 1rem;
+    font-size: 1.15rem;
+    line-height: 1.65;
 }
 
 /* Feedback Section */
 
 .feedback-section {
-    margin-top: 24px;
+    margin-top: 8px;
     padding-right: calc(var(--badge-width) + var(--badge-gap));
 }
 
@@ -349,14 +413,14 @@ button {
 /* Correct Answer Block */
 
 .correct-block {
-    margin-bottom: 4px;
+    margin-bottom: 8px;
 }
 
 .correct-label,
 .correct-label-only {
     font-weight: normal;
     color: #333333;
-    font-size: 1.05rem;
+    font-size: 1.22rem;
 }
 
 .correct-label-only {
@@ -364,16 +428,16 @@ button {
 }
 
 .correct-value {
-    font-size: 1.05rem;
+    font-size: 1.22rem;
 }
 
 .correct-answer {
-    font-size: 1.05rem;
+    font-size: 1.22rem;
     margin-bottom: 4px;
 }
 
 .explanation {
-    margin-top: 16px;
+    margin-top: 20px;
     margin-bottom: 16px;
     font-size: 1.05rem;
     line-height: 1.8;
@@ -392,7 +456,7 @@ button {
 /* Final Screen */
 
 .final-screen {
-    padding-top: 80px;
+    padding: 24px 0;
     text-align: center;
 }
 
@@ -417,8 +481,6 @@ button {
     font-size: 1.1rem;
 }
 
-/* Mobile */
-
 /* Scroll Hint (hidden on desktop) */
 
 .scroll-hint {
@@ -427,9 +489,21 @@ button {
 
 /* Mobile */
 
-@media (max-width: 768px) {
-    .flip-card {
-        height: 35vh;
+@media (max-width: 600px) {
+    #app {
+        padding: 36px 20px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    body {
+        font-size: 18px;
+    }
+
+    .question-text {
+        font-size: 21px;
+        line-height: 1.65;
     }
 
     .question-screen {

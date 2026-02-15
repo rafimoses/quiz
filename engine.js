@@ -17,31 +17,7 @@
         return;
     }
 
-    var baseTitle = quizData.quiz_title;
-    document.title = baseTitle;
-
-    function getTimestamp() {
-        var now = new Date();
-        var hh = String(now.getHours()).padStart(2, '0');
-        var mm = String(now.getMinutes()).padStart(2, '0');
-        var ss = String(now.getSeconds()).padStart(2, '0');
-        return hh + ':' + mm + ':' + ss;
-    }
-
-    function stampTitle() {
-        var ts = getTimestamp();
-        document.title = baseTitle + ' \u2013 ' + ts;
-        // Also stamp the visible on-page title element
-        var el = document.querySelector('.series-title, .progress-text, .final-title');
-        if (el) {
-            var base = el.getAttribute('data-base-text');
-            if (!base) {
-                base = el.textContent;
-                el.setAttribute('data-base-text', base);
-            }
-            el.textContent = base + ' \u2013 ' + ts;
-        }
-    }
+    document.title = quizData.quiz_title;
 
     var currentQuestionIndex = 0;
     var score = 0;
@@ -49,6 +25,8 @@
     var scrollHintEl = null;
     var scrollListeners = [];
     var scrollRafId = 0;
+    var confirmInProgress = false;
+    var lastProgressPct = 0;
 
     function cleanupScrollHint() {
         if (scrollHintEl && scrollHintEl.parentNode) {
@@ -133,7 +111,7 @@
         setTimeout(updateScrollArrowVisibility, 500);
 
         // Recalculate after images load (handles both fresh and cached)
-        var images = document.querySelectorAll('.flip-front img');
+        var images = document.querySelectorAll('.question-image');
         for (var i = 0; i < images.length; i++) {
             if (images[i].complete) {
                 setTimeout(updateScrollArrowVisibility, 0);
@@ -205,12 +183,12 @@
         screen.appendChild(footer);
 
         app.appendChild(screen);
-        stampTitle();
     }
 
     function showQuestion(index) {
         currentQuestionIndex = index;
         selectedAnswers = new Set();
+        confirmInProgress = false;
 
         var question = quizData.questions[index];
         var total = quizData.questions.length;
@@ -243,13 +221,27 @@
         progressBar.className = 'progress-bar';
         var progressFill = document.createElement('div');
         progressFill.className = 'progress-fill';
-        progressFill.style.width = ((index + 1) / total * 100) + '%';
+        var targetPct = (index + 1) / total * 100;
+        progressFill.style.width = lastProgressPct + '%';
         progressBar.appendChild(progressFill);
         progressContainer.appendChild(progressBar);
 
         screen.appendChild(progressContainer);
 
-        // Image flip card
+        // Optional question image
+        var hasImage = question.image && question.image.length > 0;
+        if (hasImage) {
+            var imgEl = document.createElement('img');
+            imgEl.className = 'question-image';
+            imgEl.src = question.image;
+            imgEl.alt = '';
+            imgEl.addEventListener('load', function () {
+                updateScrollArrowVisibility();
+            });
+            screen.appendChild(imgEl);
+        }
+
+        // Flip card (feedback card — always present)
         var flipContainer = document.createElement('div');
         flipContainer.className = 'flip-container';
 
@@ -258,10 +250,6 @@
 
         var flipFront = document.createElement('div');
         flipFront.className = 'flip-front';
-        var img = document.createElement('img');
-        img.src = question.image;
-        img.alt = '';
-        flipFront.appendChild(img);
         flipCard.appendChild(flipFront);
 
         var flipBack = document.createElement('div');
@@ -269,6 +257,8 @@
         flipCard.appendChild(flipBack);
 
         flipContainer.appendChild(flipCard);
+        // Flip container starts hidden; shown only on feedback
+        flipContainer.style.display = 'none';
         screen.appendChild(flipContainer);
 
         // Question header (badge + text)
@@ -322,12 +312,18 @@
         screen.appendChild(answersContainer);
 
         confirmBtn.addEventListener('click', function () {
-            confirmAnswer(question, isMultiple, flipCard, flipBack, screen, answersContainer, confirmBtn);
+            confirmAnswer(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn);
         });
         screen.appendChild(confirmBtn);
 
         app.appendChild(screen);
-        stampTitle();
+
+        // Animate progress bar from previous width to new width
+        requestAnimationFrame(function () {
+            progressFill.style.width = targetPct + '%';
+            lastProgressPct = targetPct;
+        });
+
         setupScrollHint();
     }
 
@@ -355,7 +351,11 @@
         confirmBtn.disabled = selectedAnswers.size === 0;
     }
 
-    function confirmAnswer(question, isMultiple, flipCard, flipBack, screen, answersContainer, confirmBtn) {
+    function confirmAnswer(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn) {
+        // Guard against double-tap during fade
+        if (confirmInProgress) return;
+        confirmInProgress = true;
+
         var ui = systemTexts.interface;
 
         var correctIndices = new Set();
@@ -384,106 +384,119 @@
 
         if (isCorrect) score++;
 
-        // Card back content
+        // Prepare feedback content before fading
         flipBack.innerHTML = '';
         var resultContent = document.createElement('div');
-        resultContent.className = 'result-content ' + (isCorrect ? 'result-correct' : 'result-incorrect');
+        resultContent.className = 'result-content ' + (isCorrect ? 'result-correct positive-pulse' : 'result-incorrect');
 
         if (isCorrect) {
+            var positiveText = ui.positive_feedback || 'יפה מאוד';
+            if (positiveText.charAt(positiveText.length - 1) !== '!') {
+                positiveText += '!';
+            }
             var symbolSpan = document.createElement('span');
             symbolSpan.className = 'result-symbol';
             symbolSpan.textContent = '✔';
             resultContent.appendChild(symbolSpan);
             var feedbackSpan = document.createElement('span');
             feedbackSpan.className = 'result-feedback';
-            feedbackSpan.textContent = ' יפה מאוד';
+            feedbackSpan.textContent = positiveText;
             resultContent.appendChild(feedbackSpan);
         } else {
+            var negativeText = ui.negative_feedback || 'לא נורא, העיקר שלומדים.';
             var feedbackSpan2 = document.createElement('span');
             feedbackSpan2.className = 'result-feedback';
-            feedbackSpan2.textContent = 'טעות. לא נורא, העיקר שלומדים.';
+            feedbackSpan2.textContent = negativeText;
             resultContent.appendChild(feedbackSpan2);
         }
 
         flipBack.appendChild(resultContent);
 
-        // Flip
-        flipCard.classList.add('flipped');
+        // Phase 1: fade out the current screen
+        screen.classList.add('fade-out');
 
-        // Remove answers, confirm button, and question header
-        answersContainer.remove();
-        confirmBtn.remove();
-        var questionHeader = screen.querySelector('.question-header');
-        if (questionHeader) questionHeader.remove();
+        setTimeout(function () {
+            // Phase 2: swap content while invisible
+            answersContainer.remove();
+            confirmBtn.remove();
+            var questionHeader = screen.querySelector('.question-header');
+            if (questionHeader) questionHeader.remove();
 
-        // Feedback section below card
-        var feedbackSection = document.createElement('div');
-        feedbackSection.className = 'feedback-section';
+            var questionImage = screen.querySelector('.question-image');
+            if (questionImage) questionImage.style.display = 'none';
 
-        // Correct answer(s)
-        var correctAnswers = [];
-        for (var j = 0; j < question.answers.length; j++) {
-            if (question.answers[j].correct) {
-                correctAnswers.push(question.answers[j].text);
+            flipContainer.style.display = '';
+            flipCard.classList.add('flipped');
+
+            // Feedback section below card
+            var feedbackSection = document.createElement('div');
+            feedbackSection.className = 'feedback-section';
+
+            var correctAnswers = [];
+            for (var j = 0; j < question.answers.length; j++) {
+                if (question.answers[j].correct) {
+                    correctAnswers.push(question.answers[j].text);
+                }
             }
-        }
 
-        var correctBlock = document.createElement('div');
-        correctBlock.className = 'correct-block';
+            var correctBlock = document.createElement('div');
+            correctBlock.className = 'correct-block';
 
-        if (correctAnswers.length === 1) {
-            var correctLine = document.createElement('p');
-            correctLine.className = 'correct-line';
-            var label = document.createElement('span');
-            label.className = 'correct-label';
-            label.textContent = 'התשובה הנכונה:';
-            var value = document.createElement('span');
-            value.className = 'correct-value';
-            value.textContent = ' ' + correctAnswers[0];
-            correctLine.appendChild(label);
-            correctLine.appendChild(value);
-            correctBlock.appendChild(correctLine);
-        } else if (correctAnswers.length > 1) {
-            var labelOnly = document.createElement('p');
-            labelOnly.className = 'correct-label-only';
-            labelOnly.textContent = 'התשובות הנכונות:';
-            correctBlock.appendChild(labelOnly);
+            if (correctAnswers.length === 1) {
+                var correctLine = document.createElement('p');
+                correctLine.className = 'correct-line';
+                var label = document.createElement('span');
+                label.className = 'correct-label';
+                label.textContent = 'התשובה הנכונה:';
+                var value = document.createElement('span');
+                value.className = 'correct-value';
+                value.textContent = ' ' + correctAnswers[0];
+                correctLine.appendChild(label);
+                correctLine.appendChild(value);
+                correctBlock.appendChild(correctLine);
+            } else if (correctAnswers.length > 1) {
+                var labelOnly = document.createElement('p');
+                labelOnly.className = 'correct-label-only';
+                labelOnly.textContent = 'התשובות הנכונות:';
+                correctBlock.appendChild(labelOnly);
 
-            for (var k = 0; k < correctAnswers.length; k++) {
-                var ansEl = document.createElement('p');
-                ansEl.className = 'correct-answer';
-                ansEl.textContent = correctAnswers[k];
-                correctBlock.appendChild(ansEl);
+                for (var k = 0; k < correctAnswers.length; k++) {
+                    var ansEl = document.createElement('p');
+                    ansEl.className = 'correct-answer';
+                    ansEl.textContent = correctAnswers[k];
+                    correctBlock.appendChild(ansEl);
+                }
             }
-        }
 
-        feedbackSection.appendChild(correctBlock);
+            feedbackSection.appendChild(correctBlock);
 
-        // Explanation (empty text rendering rule)
-        if (question.explanation) {
-            var explanationEl = document.createElement('div');
-            explanationEl.className = 'explanation';
-            explanationEl.innerHTML = parseExplanation(question.explanation);
-            feedbackSection.appendChild(explanationEl);
-        }
-
-        // Next button
-        var nextBtn = document.createElement('button');
-        nextBtn.className = 'next-button';
-        var isLast = currentQuestionIndex === quizData.questions.length - 1;
-        nextBtn.textContent = isLast ? 'איך יצא לי?' : ui.next_button;
-        nextBtn.addEventListener('click', function () {
-            if (isLast) {
-                showFinal();
-            } else {
-                showQuestion(currentQuestionIndex + 1);
+            if (question.explanation) {
+                var explanationEl = document.createElement('div');
+                explanationEl.className = 'explanation';
+                explanationEl.innerHTML = parseExplanation(question.explanation);
+                feedbackSection.appendChild(explanationEl);
             }
-        });
-        feedbackSection.appendChild(nextBtn);
 
-        screen.appendChild(feedbackSection);
-        stampTitle();
-        setupScrollHint();
+            var nextBtn = document.createElement('button');
+            nextBtn.className = 'next-button';
+            var isLast = currentQuestionIndex === quizData.questions.length - 1;
+            nextBtn.textContent = isLast ? 'איך יצא לי?' : ui.next_button;
+            nextBtn.addEventListener('click', function () {
+                if (isLast) {
+                    showFinal();
+                } else {
+                    showQuestion(currentQuestionIndex + 1);
+                }
+            });
+            feedbackSection.appendChild(nextBtn);
+
+            screen.appendChild(feedbackSection);
+
+            // Phase 3: fade in the new content
+            screen.classList.remove('fade-out');
+
+            setupScrollHint();
+        }, 260);
     }
 
     function showFinal() {
@@ -525,7 +538,6 @@
         }
 
         app.appendChild(screen);
-        stampTitle();
     }
 
     showOpening();
