@@ -52,10 +52,48 @@
 
         function updateHint() {
             if (!scrollHintEl) return;
-            var doc = document.documentElement;
-            var maxScroll = doc.scrollHeight - doc.clientHeight;
-            var remaining = maxScroll - window.scrollY;
-            if (maxScroll > 120 && remaining > 60) {
+
+            // Find the last real content element inside the screen,
+            // ignoring padding-bottom spacers and fixed-position buttons.
+            var screen = document.querySelector('.screen');
+            if (!screen) {
+                scrollHintEl.classList.add('hidden');
+                return;
+            }
+
+            // Candidates: all meaningful content blocks (not the fixed buttons)
+            var candidates = screen.querySelectorAll(
+                '.progress-container, .flip-container, .question-header, .answers-container, .feedback-section'
+            );
+            if (candidates.length === 0) {
+                scrollHintEl.classList.add('hidden');
+                return;
+            }
+
+            var lastEl = candidates[candidates.length - 1];
+
+            // If the last element is .feedback-section, drill into its last
+            // non-button child to ignore the fixed next-button's space.
+            if (lastEl.classList.contains('feedback-section')) {
+                var children = lastEl.children;
+                for (var c = children.length - 1; c >= 0; c--) {
+                    if (!children[c].classList.contains('next-button')) {
+                        lastEl = children[c];
+                        break;
+                    }
+                }
+            }
+
+            var contentBottom = lastEl.getBoundingClientRect().bottom;
+            var viewportHeight = window.innerHeight;
+
+            // Reserve space for the sticky button zone at the bottom
+            var stickyZone = 70;
+            var visibleBottom = viewportHeight - stickyZone;
+
+            // Show arrow only if real content extends meaningfully beyond
+            // the visible area (40px threshold to ignore tiny rounding overflow)
+            if (contentBottom > visibleBottom + 40) {
                 scrollHintEl.classList.remove('hidden');
             } else {
                 scrollHintEl.classList.add('hidden');
@@ -64,10 +102,13 @@
 
         var onScroll = function () { updateHint(); };
         var onResize = function () { updateHint(); };
+        var onOrientation = function () { setTimeout(updateHint, 200); };
         window.addEventListener('scroll', onScroll);
         window.addEventListener('resize', onResize);
+        window.addEventListener('orientationchange', onOrientation);
         scrollListeners.push({ type: 'scroll', fn: onScroll });
         scrollListeners.push({ type: 'resize', fn: onResize });
+        scrollListeners.push({ type: 'orientationchange', fn: onOrientation });
 
         // Recalculate after render, images, and a delay for layout settling
         setTimeout(updateHint, 100);
