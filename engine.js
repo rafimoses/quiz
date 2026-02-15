@@ -68,14 +68,22 @@
         scrollHintEl = document.createElement('button');
         scrollHintEl.className = 'scroll-hint hidden';
         scrollHintEl.setAttribute('aria-label', 'גלול למטה');
-        scrollHintEl.textContent = '▼';
+        scrollHintEl.textContent = '⟩';
         document.body.appendChild(scrollHintEl);
 
         scrollHintEl.addEventListener('click', function () {
             window.scrollBy({ top: window.innerHeight * 0.7, behavior: 'smooth' });
         });
 
-        var onScroll = function () { scheduleScrollUpdate(); };
+        var scrollIdleTimer = 0;
+        var onScroll = function () {
+            scheduleScrollUpdate();
+            if (scrollHintEl) scrollHintEl.classList.add('scrolling');
+            clearTimeout(scrollIdleTimer);
+            scrollIdleTimer = setTimeout(function () {
+                if (scrollHintEl) scrollHintEl.classList.remove('scrolling');
+            }, 300);
+        };
         var onResize = function () { scheduleScrollUpdate(); };
         var onOrientation = function () { setTimeout(updateScrollArrowVisibility, 200); };
         window.addEventListener('scroll', onScroll);
