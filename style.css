@@ -433,11 +433,11 @@ button {
     }
 
     .question-screen {
-        padding-bottom: calc(var(--sticky-btn-height) + 56px);
+        padding-bottom: calc(var(--sticky-btn-height) + 16px);
     }
 
     .feedback-section {
-        padding-bottom: calc(var(--sticky-btn-height) + 56px);
+        padding-bottom: calc(var(--sticky-btn-height) + 16px);
     }
 
     .confirm-button,

@@ -24,6 +24,7 @@
     var selectedAnswers = new Set();
     var scrollHintEl = null;
     var scrollListeners = [];
+    var scrollRafId = 0;
 
     function cleanupScrollHint() {
         if (scrollHintEl && scrollHintEl.parentNode) {
@@ -34,6 +35,30 @@
             window.removeEventListener(scrollListeners[i].type, scrollListeners[i].fn);
         }
         scrollListeners = [];
+        if (scrollRafId) {
+            cancelAnimationFrame(scrollRafId);
+            scrollRafId = 0;
+        }
+    }
+
+    function updateScrollArrowVisibility() {
+        if (!scrollHintEl) return;
+        var scroller = document.scrollingElement || document.documentElement;
+        var maxScroll = scroller.scrollHeight - scroller.clientHeight;
+        var remaining = maxScroll - scroller.scrollTop;
+        if (maxScroll > 24 && remaining > 24) {
+            scrollHintEl.classList.remove('hidden');
+        } else {
+            scrollHintEl.classList.add('hidden');
+        }
+    }
+
+    function scheduleScrollUpdate() {
+        if (scrollRafId) return;
+        scrollRafId = requestAnimationFrame(function () {
+            scrollRafId = 0;
+            updateScrollArrowVisibility();
+        });
     }
 
     function setupScrollHint() {
@@ -50,59 +75,9 @@
             window.scrollBy({ top: window.innerHeight * 0.7, behavior: 'smooth' });
         });
 
-        function updateHint() {
-            if (!scrollHintEl) return;
-
-            // Find the last real content element inside the screen,
-            // ignoring padding-bottom spacers and fixed-position buttons.
-            var screen = document.querySelector('.screen');
-            if (!screen) {
-                scrollHintEl.classList.add('hidden');
-                return;
-            }
-
-            // Candidates: all meaningful content blocks (not the fixed buttons)
-            var candidates = screen.querySelectorAll(
-                '.progress-container, .flip-container, .question-header, .answers-container, .feedback-section'
-            );
-            if (candidates.length === 0) {
-                scrollHintEl.classList.add('hidden');
-                return;
-            }
-
-            var lastEl = candidates[candidates.length - 1];
-
-            // If the last element is .feedback-section, drill into its last
-            // non-button child to ignore the fixed next-button's space.
-            if (lastEl.classList.contains('feedback-section')) {
-                var children = lastEl.children;
-                for (var c = children.length - 1; c >= 0; c--) {
-                    if (!children[c].classList.contains('next-button')) {
-                        lastEl = children[c];
-                        break;
-                    }
-                }
-            }
-
-            var contentBottom = lastEl.getBoundingClientRect().bottom;
-            var viewportHeight = window.innerHeight;
-
-            // Reserve space for the sticky button zone at the bottom
-            var stickyZone = 70;
-            var visibleBottom = viewportHeight - stickyZone;
-
-            // Show arrow only if real content extends meaningfully beyond
-            // the visible area (40px threshold to ignore tiny rounding overflow)
-            if (contentBottom > visibleBottom + 40) {
-                scrollHintEl.classList.remove('hidden');
-            } else {
-                scrollHintEl.classList.add('hidden');
-            }
-        }
-
-        var onScroll = function () { updateHint(); };
-        var onResize = function () { updateHint(); };
-        var onOrientation = function () { setTimeout(updateHint, 200); };
+        var onScroll = function () { scheduleScrollUpdate(); };
+        var onResize = function () { scheduleScrollUpdate(); };
+        var onOrientation = function () { setTimeout(updateScrollArrowVisibility, 200); };
         window.addEventListener('scroll', onScroll);
         window.addEventListener('resize', onResize);
         window.addEventListener('orientationchange', onOrientation);
@@ -110,12 +85,18 @@
         scrollListeners.push({ type: 'resize', fn: onResize });
         scrollListeners.push({ type: 'orientationchange', fn: onOrientation });
 
-        // Recalculate after render, images, and a delay for layout settling
-        setTimeout(updateHint, 100);
-        setTimeout(updateHint, 500);
+        // Recalculate after layout settles
+        setTimeout(updateScrollArrowVisibility, 100);
+        setTimeout(updateScrollArrowVisibility, 500);
+
+        // Recalculate after images load (handles both fresh and cached)
         var images = document.querySelectorAll('.flip-front img');
         for (var i = 0; i < images.length; i++) {
-            images[i].addEventListener('load', updateHint);
+            if (images[i].complete) {
+                setTimeout(updateScrollArrowVisibility, 0);
+            } else {
+                images[i].addEventListener('load', updateScrollArrowVisibility);
+            }
         }
     }
 
