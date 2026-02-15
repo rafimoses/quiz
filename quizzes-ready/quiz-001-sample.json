@@ -5,7 +5,6 @@
   "questions": [
     {
       "question": "מהי הצורה הנכונה של המילה?",
-      "image": "images/quiz-001-q1.jpg",
       "answers": [
         { "text": "אִמָּא", "correct": false },
         { "text": "אִמָא", "correct": false },
@@ -16,7 +15,6 @@
     },
     {
       "question": "סמנו את כל צורות הרבים התקניות (יותר מתשובה אחת נכונה).",
-      "image": "images/quiz-001-q2.jpg",
       "answers": [
         { "text": "חֲלוֹנוֹת", "correct": true },
         { "text": "חַלּוֹנוֹת", "correct": true },
