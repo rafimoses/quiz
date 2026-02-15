@@ -52,9 +52,10 @@
 
         function updateHint() {
             if (!scrollHintEl) return;
-            var scrollable = document.documentElement.scrollHeight > window.innerHeight + 10;
-            var nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 40;
-            if (scrollable && !nearBottom) {
+            var doc = document.documentElement;
+            var maxScroll = doc.scrollHeight - doc.clientHeight;
+            var remaining = maxScroll - window.scrollY;
+            if (maxScroll > 16 && remaining > 8) {
                 scrollHintEl.classList.remove('hidden');
             } else {
                 scrollHintEl.classList.add('hidden');
@@ -68,7 +69,13 @@
         scrollListeners.push({ type: 'scroll', fn: onScroll });
         scrollListeners.push({ type: 'resize', fn: onResize });
 
+        // Recalculate after render, images, and a delay for layout settling
         setTimeout(updateHint, 100);
+        setTimeout(updateHint, 500);
+        var images = document.querySelectorAll('.flip-front img');
+        for (var i = 0; i < images.length; i++) {
+            images[i].addEventListener('load', updateHint);
+        }
     }
 
     function template(str, values) {

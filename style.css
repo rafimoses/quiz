@@ -443,23 +443,21 @@ button {
     .confirm-button,
     .next-button {
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 10;
-        border-radius: 0;
         margin: 0;
-        width: 100%;
-        max-width: none;
-        height: var(--sticky-btn-height);
-        padding-top: 0;
-        padding-bottom: 0;
+        width: auto;
+        display: inline-block;
+        padding: 12px 48px;
+        border-radius: 6px;
     }
 
     .scroll-hint {
         display: block;
         position: fixed;
-        bottom: calc(var(--sticky-btn-height) + 12px);
+        bottom: calc(var(--sticky-btn-height) + 24px);
         left: 50%;
         transform: translateX(-50%);
         z-index: 11;
