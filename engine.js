@@ -17,7 +17,16 @@
         return;
     }
 
-    document.title = quizData.quiz_title;
+    var baseTitle = quizData.quiz_title;
+    document.title = baseTitle;
+
+    function stampTitle() {
+        var now = new Date();
+        var hh = String(now.getHours()).padStart(2, '0');
+        var mm = String(now.getMinutes()).padStart(2, '0');
+        var ss = String(now.getSeconds()).padStart(2, '0');
+        document.title = baseTitle + ' \u2013 ' + hh + ':' + mm + ':' + ss;
+    }
 
     var currentQuestionIndex = 0;
     var score = 0;
@@ -140,6 +149,7 @@
 
     function showOpening() {
         cleanupScrollHint();
+        stampTitle();
         var ui = systemTexts.interface;
 
         app.innerHTML = '';
@@ -175,6 +185,7 @@
     function showQuestion(index) {
         currentQuestionIndex = index;
         selectedAnswers = new Set();
+        stampTitle();
 
         var question = quizData.questions[index];
         var total = quizData.questions.length;
@@ -319,6 +330,7 @@
     }
 
     function confirmAnswer(question, isMultiple, flipCard, flipBack, screen, answersContainer, confirmBtn) {
+        stampTitle();
         var ui = systemTexts.interface;
 
         var correctIndices = new Set();
@@ -450,6 +462,7 @@
 
     function showFinal() {
         cleanupScrollHint();
+        stampTitle();
         var ui = systemTexts.interface;
         var total = quizData.questions.length;
         var percentage = Math.round((score / total) * 100);
