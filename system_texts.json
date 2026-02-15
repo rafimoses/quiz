@@ -1,0 +1,20 @@
+{
+  "interface": {
+    "start_button": "\u200Fקדימה!",
+    "confirm_button": "אישור",
+    "next_button": "לשאלה הבאה",
+    "question_progress": "שאלה {current} מתוך {total}",
+    "positive_feedback": "יפה מאוד",
+    "negative_feedback": "",
+    "correct_answers_title": "התשובות הנכונות:",
+    "final_title": "הצלחת",
+    "final_score": "{correct} מתוך {total} שאלות.",
+    "quiz_line": "חידון {number} — {title}"
+  },
+  "score_tiers": [
+    { "from": 90, "text": "שליטתך מצוינת." },
+    { "from": 75, "text": "שליטתך טובה מאוד." },
+    { "from": 60, "text": "שליטתך סבירה." },
+    { "from": 0, "text": "כדאי לרענן." }
+  ]
+}
