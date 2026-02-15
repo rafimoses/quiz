@@ -22,6 +22,54 @@
     var currentQuestionIndex = 0;
     var score = 0;
     var selectedAnswers = new Set();
+    var scrollHintEl = null;
+    var scrollListeners = [];
+
+    function cleanupScrollHint() {
+        if (scrollHintEl && scrollHintEl.parentNode) {
+            scrollHintEl.parentNode.removeChild(scrollHintEl);
+        }
+        scrollHintEl = null;
+        for (var i = 0; i < scrollListeners.length; i++) {
+            window.removeEventListener(scrollListeners[i].type, scrollListeners[i].fn);
+        }
+        scrollListeners = [];
+    }
+
+    function setupScrollHint() {
+        cleanupScrollHint();
+        if (window.innerWidth > 768) return;
+
+        scrollHintEl = document.createElement('button');
+        scrollHintEl.className = 'scroll-hint hidden';
+        scrollHintEl.setAttribute('aria-label', 'גלול למטה');
+        scrollHintEl.textContent = '▼';
+        document.body.appendChild(scrollHintEl);
+
+        scrollHintEl.addEventListener('click', function () {
+            window.scrollBy({ top: window.innerHeight * 0.7, behavior: 'smooth' });
+        });
+
+        function updateHint() {
+            if (!scrollHintEl) return;
+            var scrollable = document.documentElement.scrollHeight > window.innerHeight + 10;
+            var nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 40;
+            if (scrollable && !nearBottom) {
+                scrollHintEl.classList.remove('hidden');
+            } else {
+                scrollHintEl.classList.add('hidden');
+            }
+        }
+
+        var onScroll = function () { updateHint(); };
+        var onResize = function () { updateHint(); };
+        window.addEventListener('scroll', onScroll);
+        window.addEventListener('resize', onResize);
+        scrollListeners.push({ type: 'scroll', fn: onScroll });
+        scrollListeners.push({ type: 'resize', fn: onResize });
+
+        setTimeout(updateHint, 100);
+    }
 
     function template(str, values) {
         return str.replace(/\{(\w+)\}/g, function (match, key) {
@@ -54,6 +102,7 @@
     }
 
     function showOpening() {
+        cleanupScrollHint();
         var ui = systemTexts.interface;
 
         app.innerHTML = '';
@@ -205,6 +254,7 @@
         screen.appendChild(confirmBtn);
 
         app.appendChild(screen);
+        setupScrollHint();
     }
 
     function selectAnswer(ansIndex, isMultiple, answersContainer, confirmBtn) {
@@ -358,9 +408,11 @@
         feedbackSection.appendChild(nextBtn);
 
         screen.appendChild(feedbackSection);
+        setupScrollHint();
     }
 
     function showFinal() {
+        cleanupScrollHint();
         var ui = systemTexts.interface;
         var total = quizData.questions.length;
         var percentage = Math.round((score / total) * 100);

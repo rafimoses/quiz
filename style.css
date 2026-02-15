@@ -2,6 +2,7 @@
     --primary-color: #6b8fb3;
     --badge-width: 34px;
     --badge-gap: 10px;
+    --sticky-btn-height: 52px;
 }
 
 * {
@@ -418,8 +419,67 @@ button {
 
 /* Mobile */
 
+/* Scroll Hint (hidden on desktop) */
+
+.scroll-hint {
+    display: none;
+}
+
+/* Mobile */
+
 @media (max-width: 768px) {
     .flip-card {
         height: 35vh;
+    }
+
+    .question-screen {
+        padding-bottom: calc(var(--sticky-btn-height) + 56px);
+    }
+
+    .feedback-section {
+        padding-bottom: calc(var(--sticky-btn-height) + 56px);
+    }
+
+    .confirm-button,
+    .next-button {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        border-radius: 0;
+        margin: 0;
+        width: 100%;
+        max-width: none;
+        height: var(--sticky-btn-height);
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .scroll-hint {
+        display: block;
+        position: fixed;
+        bottom: calc(var(--sticky-btn-height) + 12px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 11;
+        background: none;
+        border: none;
+        padding: 8px;
+        cursor: pointer;
+        color: #999999;
+        font-size: 1.4rem;
+        line-height: 1;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
+
+    .scroll-hint:hover {
+        opacity: 1;
+    }
+
+    .scroll-hint.hidden {
+        opacity: 0;
+        pointer-events: none;
     }
 }
