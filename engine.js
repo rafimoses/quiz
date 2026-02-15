@@ -55,7 +55,7 @@
             var doc = document.documentElement;
             var maxScroll = doc.scrollHeight - doc.clientHeight;
             var remaining = maxScroll - window.scrollY;
-            if (maxScroll > 16 && remaining > 8) {
+            if (maxScroll > 120 && remaining > 60) {
                 scrollHintEl.classList.remove('hidden');
             } else {
                 scrollHintEl.classList.add('hidden');

@@ -445,10 +445,12 @@ button {
         position: fixed;
         bottom: 12px;
         left: 50%;
+        right: auto;
         transform: translateX(-50%);
         z-index: 10;
         margin: 0;
         width: auto;
+        max-width: 80vw;
         display: inline-block;
         padding: 12px 48px;
         border-radius: 6px;
