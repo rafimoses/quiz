@@ -38,8 +38,8 @@
     function parseExplanation(text) {
         if (!text) return '';
         var html = escapeHtml(text);
-        html = html.replace(/\+\+(.+?)\+\+/g, '<span class="marker-correct">✔ $1</span>');
-        html = html.replace(/--(.+?)--/g, '<span class="marker-incorrect">✘ $1</span>');
+        html = html.replace(/\+\+(.+?)\+\+/g, '<span class="marker-correct">$1</span>');
+        html = html.replace(/--(.+?)--/g, '<span class="marker-incorrect">$1</span>');
         return html;
     }
 
@@ -260,30 +260,25 @@
 
         if (isCorrect) score++;
 
-        var symbol = isCorrect ? '✔' : '✘';
-
         // Card back content
         flipBack.innerHTML = '';
         var resultContent = document.createElement('div');
         resultContent.className = 'result-content ' + (isCorrect ? 'result-correct' : 'result-incorrect');
 
-        var symbolSpan = document.createElement('span');
-        symbolSpan.className = 'result-symbol';
-        symbolSpan.textContent = symbol;
-        resultContent.appendChild(symbolSpan);
-
-        var feedbackStr = '';
-        if (isCorrect && ui.positive_feedback) {
-            feedbackStr = ui.positive_feedback;
-        } else if (!isCorrect && ui.negative_feedback) {
-            feedbackStr = ui.negative_feedback;
-        }
-
-        if (feedbackStr) {
+        if (isCorrect) {
+            var symbolSpan = document.createElement('span');
+            symbolSpan.className = 'result-symbol';
+            symbolSpan.textContent = '✔';
+            resultContent.appendChild(symbolSpan);
             var feedbackSpan = document.createElement('span');
             feedbackSpan.className = 'result-feedback';
-            feedbackSpan.textContent = ' ' + feedbackStr;
+            feedbackSpan.textContent = ' יפה מאוד';
             resultContent.appendChild(feedbackSpan);
+        } else {
+            var feedbackSpan2 = document.createElement('span');
+            feedbackSpan2.className = 'result-feedback';
+            feedbackSpan2.textContent = 'טעות. לא נורא, העיקר שלומדים.';
+            resultContent.appendChild(feedbackSpan2);
         }
 
         flipBack.appendChild(resultContent);
@@ -291,9 +286,11 @@
         // Flip
         flipCard.classList.add('flipped');
 
-        // Remove answers and confirm button
+        // Remove answers, confirm button, and question header
         answersContainer.remove();
         confirmBtn.remove();
+        var questionHeader = screen.querySelector('.question-header');
+        if (questionHeader) questionHeader.remove();
 
         // Feedback section below card
         var feedbackSection = document.createElement('div');
@@ -315,11 +312,7 @@
             correctLine.className = 'correct-line';
             var label = document.createElement('span');
             label.className = 'correct-label';
-            var labelText = document.createElement('span');
-            labelText.className = 'label-text';
-            labelText.textContent = 'התשובה הנכונה';
-            label.appendChild(labelText);
-            label.appendChild(document.createTextNode(':'));
+            label.textContent = 'התשובה הנכונה:';
             var value = document.createElement('span');
             value.className = 'correct-value';
             value.textContent = ' ' + correctAnswers[0];
@@ -329,11 +322,7 @@
         } else if (correctAnswers.length > 1) {
             var labelOnly = document.createElement('p');
             labelOnly.className = 'correct-label-only';
-            var labelText2 = document.createElement('span');
-            labelText2.className = 'label-text';
-            labelText2.textContent = 'התשובות הנכונות';
-            labelOnly.appendChild(labelText2);
-            labelOnly.appendChild(document.createTextNode(':'));
+            labelOnly.textContent = 'התשובות הנכונות:';
             correctBlock.appendChild(labelOnly);
 
             for (var k = 0; k < correctAnswers.length; k++) {
