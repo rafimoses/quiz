@@ -20,12 +20,27 @@
     var baseTitle = quizData.quiz_title;
     document.title = baseTitle;
 
-    function stampTitle() {
+    function getTimestamp() {
         var now = new Date();
         var hh = String(now.getHours()).padStart(2, '0');
         var mm = String(now.getMinutes()).padStart(2, '0');
         var ss = String(now.getSeconds()).padStart(2, '0');
-        document.title = baseTitle + ' \u2013 ' + hh + ':' + mm + ':' + ss;
+        return hh + ':' + mm + ':' + ss;
+    }
+
+    function stampTitle() {
+        var ts = getTimestamp();
+        document.title = baseTitle + ' \u2013 ' + ts;
+        // Also stamp the visible on-page title element
+        var el = document.querySelector('.series-title, .progress-text, .final-title');
+        if (el) {
+            var base = el.getAttribute('data-base-text');
+            if (!base) {
+                base = el.textContent;
+                el.setAttribute('data-base-text', base);
+            }
+            el.textContent = base + ' \u2013 ' + ts;
+        }
     }
 
     var currentQuestionIndex = 0;
@@ -57,8 +72,11 @@
         var remaining = maxScroll - scroller.scrollTop;
         if (maxScroll > 24 && remaining > 24) {
             scrollHintEl.classList.remove('hidden');
+            scrollHintEl.classList.remove('fading-out');
         } else {
-            scrollHintEl.classList.add('hidden');
+            if (!scrollHintEl.classList.contains('hidden')) {
+                scrollHintEl.classList.add('fading-out');
+            }
         }
     }
 
@@ -82,6 +100,14 @@
 
         scrollHintEl.addEventListener('click', function () {
             window.scrollBy({ top: window.innerHeight * 0.7, behavior: 'smooth' });
+        });
+
+        // After fade-out transition ends, fully hide the element
+        scrollHintEl.addEventListener('transitionend', function () {
+            if (scrollHintEl && scrollHintEl.classList.contains('fading-out')) {
+                scrollHintEl.classList.add('hidden');
+                scrollHintEl.classList.remove('fading-out');
+            }
         });
 
         var scrollIdleTimer = 0;
@@ -149,7 +175,6 @@
 
     function showOpening() {
         cleanupScrollHint();
-        stampTitle();
         var ui = systemTexts.interface;
 
         app.innerHTML = '';
@@ -180,12 +205,12 @@
         screen.appendChild(footer);
 
         app.appendChild(screen);
+        stampTitle();
     }
 
     function showQuestion(index) {
         currentQuestionIndex = index;
         selectedAnswers = new Set();
-        stampTitle();
 
         var question = quizData.questions[index];
         var total = quizData.questions.length;
@@ -302,6 +327,7 @@
         screen.appendChild(confirmBtn);
 
         app.appendChild(screen);
+        stampTitle();
         setupScrollHint();
     }
 
@@ -330,7 +356,6 @@
     }
 
     function confirmAnswer(question, isMultiple, flipCard, flipBack, screen, answersContainer, confirmBtn) {
-        stampTitle();
         var ui = systemTexts.interface;
 
         var correctIndices = new Set();
@@ -457,12 +482,12 @@
         feedbackSection.appendChild(nextBtn);
 
         screen.appendChild(feedbackSection);
+        stampTitle();
         setupScrollHint();
     }
 
     function showFinal() {
         cleanupScrollHint();
-        stampTitle();
         var ui = systemTexts.interface;
         var total = quizData.questions.length;
         var percentage = Math.round((score / total) * 100);
@@ -500,6 +525,7 @@
         }
 
         app.appendChild(screen);
+        stampTitle();
     }
 
     showOpening();
