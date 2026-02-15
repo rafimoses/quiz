@@ -68,7 +68,7 @@
         scrollHintEl = document.createElement('button');
         scrollHintEl.className = 'scroll-hint hidden';
         scrollHintEl.setAttribute('aria-label', 'גלול למטה');
-        scrollHintEl.textContent = '⟩';
+        scrollHintEl.textContent = '';
         document.body.appendChild(scrollHintEl);
 
         scrollHintEl.addEventListener('click', function () {
