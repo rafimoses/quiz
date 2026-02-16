@@ -4,7 +4,7 @@
   "quiz_title": "חידון לשון 1",
   "questions": [
     {
-      "question": "איזה מהטקסטים תקני?",
+      "question": "באיזה מהטקסטים הכתיב תקני?",
       "answers": [
         { "text": "פריסת הכוחות האמריקניים באיזור", "correct": false },
         { "text": "פריסת הכוחות האמריקנים באזור", "correct": false },
