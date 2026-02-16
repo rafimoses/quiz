@@ -228,7 +228,7 @@
 
         var submitBtn = document.createElement('button');
         submitBtn.className = 'modal-btn-submit';
-        submitBtn.textContent = 'להגיש';
+        submitBtn.textContent = 'לאשר';
         submitBtn.addEventListener('click', function () {
             closeModal();
             onSubmit();
@@ -480,7 +480,7 @@
         // Modal: multi-correct question but user selected only 1 answer
         if (correctIndices.size > 1 && selectedAnswers.size === 1) {
             showModal(
-                'בשאלה זו יש יותר מתשובה נכונה אחת. להגיש בכל זאת?',
+                'בשאלה זו יש יותר מתשובה נכונה אחת. לאשר בכל זאת?',
                 function () {
                     // Proceed with grading
                     doGrade(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn, ui, correctIndices);
@@ -518,7 +518,7 @@
 
         // Check partial success for multi-correct questions
         var isPartial = false;
-        if (correctIndices.size > 1 && selectedAnswers.size >= 2 && !isCorrect) {
+        if (correctIndices.size > 1 && !isCorrect) {
             var selectedCorrectCount = 0;
             selectedAnswers.forEach(function (idx) {
                 if (correctIndices.has(idx)) selectedCorrectCount++;
