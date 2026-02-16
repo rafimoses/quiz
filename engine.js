@@ -18,7 +18,18 @@
         return;
     }
 
-    document.title = quizData.quiz_title;
+    // Build full title dynamically
+    var quizLine = 'חידון (קצר) ' + quizData.quiz_number;
+    var fullTitle = quizData.series_title + ' \u2013 ' + quizLine;
+
+    document.title = fullTitle;
+    var ogMeta = document.querySelector('meta[property="og:title"]');
+    if (!ogMeta) {
+        ogMeta = document.createElement('meta');
+        ogMeta.setAttribute('property', 'og:title');
+        document.head.appendChild(ogMeta);
+    }
+    ogMeta.setAttribute('content', fullTitle);
 
     var currentQuestionIndex = 0;
     var score = 0;
@@ -176,6 +187,9 @@
         var html = escapeHtml(text);
         html = html.replace(/\+\+(.+?)\+\+/g, '<span class="marker-correct">$1</span>');
         html = html.replace(/--(.+?)--/g, '<span class="marker-incorrect">$1</span>');
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        html = html.replace(/\n/g, '<br>');
         return html;
     }
 
@@ -207,17 +221,17 @@
 
         var titleEl = document.createElement('h1');
         titleEl.className = 'series-title';
-        titleEl.textContent = 'לִשָּׁנָא אַחֲרִינָא';
+        titleEl.innerHTML = parseExplanation(quizData.series_title);
         screen.appendChild(titleEl);
 
         var lineEl = document.createElement('p');
         lineEl.className = 'quiz-line';
-        lineEl.textContent = 'חידון לשון ' + quizData.quiz_number;
+        lineEl.innerHTML = parseExplanation(quizLine);
         screen.appendChild(lineEl);
 
         var startBtn = document.createElement('button');
         startBtn.className = 'start-button';
-        startBtn.textContent = ui.start_button;
+        startBtn.innerHTML = parseExplanation(ui.start_button);
         startBtn.addEventListener('click', function () {
             showQuestion(0);
         });
@@ -258,10 +272,10 @@
 
         var progressText = document.createElement('span');
         progressText.className = 'progress-text';
-        progressText.textContent = template(ui.question_progress, {
+        progressText.innerHTML = parseExplanation(template(ui.question_progress, {
             current: index + 1,
             total: total
-        });
+        }));
         progressContainer.appendChild(progressText);
 
         var progressBar = document.createElement('div');
@@ -319,7 +333,7 @@
 
         var questionText = document.createElement('span');
         questionText.className = 'question-text';
-        questionText.textContent = question.question;
+        questionText.innerHTML = parseExplanation(question.question);
         questionHeader.appendChild(questionText);
 
         screen.appendChild(questionHeader);
@@ -330,7 +344,7 @@
 
         var confirmBtn = document.createElement('button');
         confirmBtn.className = 'confirm-button';
-        confirmBtn.textContent = ui.confirm_button;
+        confirmBtn.innerHTML = parseExplanation(ui.confirm_button);
         confirmBtn.disabled = true;
 
         for (var a = 0; a < question.answers.length; a++) {
@@ -343,7 +357,7 @@
 
                 var text = document.createElement('span');
                 text.className = 'answer-text';
-                text.textContent = question.answers[ansIndex].text;
+                text.innerHTML = parseExplanation(question.answers[ansIndex].text);
 
                 option.appendChild(circle);
                 option.appendChild(text);
@@ -445,14 +459,14 @@
             resultContent.appendChild(symbolSpan);
             var feedbackSpan = document.createElement('span');
             feedbackSpan.className = 'result-feedback';
-            feedbackSpan.textContent = positiveText;
+            feedbackSpan.innerHTML = parseExplanation(positiveText);
             resultContent.appendChild(feedbackSpan);
         } else {
             var negativePool = ui.negative_feedback;
             var negativeText = Array.isArray(negativePool) ? getRandomItem(negativePool, 'negative') : (negativePool || 'לא נורא, לומדים מזה.');
             var feedbackSpan2 = document.createElement('span');
             feedbackSpan2.className = 'result-feedback';
-            feedbackSpan2.textContent = negativeText;
+            feedbackSpan2.innerHTML = parseExplanation(negativeText);
             resultContent.appendChild(feedbackSpan2);
         }
 
@@ -496,7 +510,7 @@
                 label.textContent = 'התשובה הנכונה:';
                 var value = document.createElement('span');
                 value.className = 'correct-value';
-                value.textContent = ' ' + correctAnswers[0];
+                value.innerHTML = ' ' + parseExplanation(correctAnswers[0]);
                 correctLine.appendChild(label);
                 correctLine.appendChild(value);
                 correctBlock.appendChild(correctLine);
@@ -509,7 +523,7 @@
                 for (var k = 0; k < correctAnswers.length; k++) {
                     var ansEl = document.createElement('p');
                     ansEl.className = 'correct-answer';
-                    ansEl.textContent = correctAnswers[k];
+                    ansEl.innerHTML = parseExplanation(correctAnswers[k]);
                     correctBlock.appendChild(ansEl);
                 }
             }
@@ -526,7 +540,7 @@
             var nextBtn = document.createElement('button');
             nextBtn.className = 'next-button';
             var isLast = currentQuestionIndex === quizData.questions.length - 1;
-            nextBtn.textContent = isLast ? 'איך יצא לי?' : ui.next_button;
+            nextBtn.innerHTML = parseExplanation(isLast ? 'איך יצא לי?' : ui.next_button);
             nextBtn.addEventListener('click', function () {
                 if (isLast) {
                     showFinal();
@@ -559,16 +573,16 @@
         if (ui.final_title) {
             var titleEl = document.createElement('h2');
             titleEl.className = 'final-title';
-            titleEl.textContent = ui.final_title;
+            titleEl.innerHTML = parseExplanation(ui.final_title);
             screen.appendChild(titleEl);
         }
 
         var scoreEl = document.createElement('p');
         scoreEl.className = 'final-score';
-        scoreEl.textContent = template(ui.final_score, {
+        scoreEl.innerHTML = parseExplanation(template(ui.final_score, {
             correct: score,
             total: total
-        });
+        }));
         screen.appendChild(scoreEl);
 
         var pctEl = document.createElement('p');
@@ -580,7 +594,7 @@
         if (evaluation) {
             var evalEl = document.createElement('p');
             evalEl.className = 'final-evaluation';
-            evalEl.textContent = evaluation;
+            evalEl.innerHTML = parseExplanation(evaluation);
             screen.appendChild(evalEl);
         }
 
