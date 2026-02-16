@@ -1,5 +1,5 @@
 {
-  "series_title": "לִשָּׁנָא אַחֲרִינָא",
+  "series_title": "כָּכָה זֶה בְּעִבְרִית!",
   "quiz_number": 1,
   "quiz_title": "חידון לשון 1",
   "questions": [
@@ -28,29 +28,29 @@
         { "text": "מאחורי סורֵג וּבְֿריח", "correct": true },
         { "text": "מאחורי סורָג וּבְֿריח", "correct": true },
         { "text": "מאחורי סורָג וּבָֿריח", "correct": false },
-        { "text": "מאחורי סורָג וּבָּריח", "correct": false }
+        { "text": "מאחורי סורָג וּבָּריח", "correct": false }
       ],
-      "explanation": "מותר לומר גם **סוֹרָג** וגם **סוֹרֵג**.\nהתקן הנעילה נקרא *בְּרִיחַ*."
+      "explanation": "מותר לומר גם **סוֹרָג** וגם **סוֹרֵג**.\nהתקן הנעילה נקרא **בְּרִיחַ**."
     },
     {
       "question": "מהי ההגייה התקנית של **דלפק**?",
       "answers": [
-        { "text": "דַלפָּק", "correct": false },
-        { "text": "דַלפֵּק", "correct": false },
-        { "text": "דֶלפֵּק", "correct": true },
-        { "text": "דֶלפַּק", "correct": false }
+        { "text": "דַלפָּק", "correct": false },
+        { "text": "דַלפֵּק", "correct": false },
+        { "text": "דֶלפֵּק", "correct": true },
+        { "text": "דֶלפַּק", "correct": false }
       ],
       "explanation": "ככה זה בעברית."
     },
     {
       "question": "איך ראוי לומר את התאריך **ב־6.6**?",
       "answers": [
-        { "text": "בַּשישי לַשישי", "correct": false },
-        { "text": "בְּשישה ביוני", "correct": true },
-        { "text": "בַּשישה ביוני", "correct": false },
-        { "text": "בְּשישה ליוני", "correct": false }
+        { "text": "בַּשישי לַשישי", "correct": false },
+        { "text": "בְּשישה ביוני", "correct": true },
+        { "text": "בַּשישה ביוני", "correct": false },
+        { "text": "בְּשישה ליוני", "correct": false }
       ],
-      "explanation": "אין לתת ה"א הידיעה בתאריכים."
+      "explanation": "אין לתת ה\"א הידיעה בתאריכים."
     }
   ]
 }
