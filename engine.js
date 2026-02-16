@@ -22,54 +22,83 @@
     var currentQuestionIndex = 0;
     var score = 0;
     var selectedAnswers = new Set();
-    var scrollHintEl = null;
-    var scrollListeners = [];
-    var scrollRafId = 0;
     var confirmInProgress = false;
     var lastProgressPct = 0;
 
-    function cleanupScrollHint() {
-        if (scrollHintEl && scrollHintEl.parentNode) {
-            scrollHintEl.parentNode.removeChild(scrollHintEl);
-        }
-        scrollHintEl = null;
-        for (var i = 0; i < scrollListeners.length; i++) {
-            window.removeEventListener(scrollListeners[i].type, scrollListeners[i].fn);
-        }
-        scrollListeners = [];
-        if (scrollRafId) {
-            cancelAnimationFrame(scrollRafId);
-            scrollRafId = 0;
+    // Global UI state
+    var scrollHintEl = null;
+    var screenListeners = [];
+    var rafId = 0;
+
+    function getRandomItem(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // ── Scrollability check ──
+
+    function isPageScrollable() {
+        return document.documentElement.scrollHeight > window.innerHeight;
+    }
+
+    // ── Sticky button logic ──
+
+    function updateStickyState() {
+        var btn = app.querySelector('.confirm-button, .next-button');
+        if (!btn) return;
+
+        var scrollable = isPageScrollable();
+        var screen = app.querySelector('.question-screen, .feedback-section');
+
+        if (scrollable) {
+            btn.classList.add('is-sticky');
+        } else {
+            btn.classList.remove('is-sticky');
         }
     }
 
-    function updateScrollArrowVisibility() {
+    // ── Scroll hint (Model A) ──
+
+    function updateScrollHint() {
         if (!scrollHintEl) return;
-        var scroller = document.scrollingElement || document.documentElement;
-        var maxScroll = scroller.scrollHeight - scroller.clientHeight;
-        var remaining = maxScroll - scroller.scrollTop;
-        if (maxScroll > 24 && remaining > 24) {
+        if (isPageScrollable() && window.scrollY < 2) {
             scrollHintEl.classList.remove('hidden');
-            scrollHintEl.classList.remove('fading-out');
         } else {
             if (!scrollHintEl.classList.contains('hidden')) {
-                scrollHintEl.classList.add('fading-out');
+                scrollHintEl.classList.add('hidden');
             }
         }
     }
 
-    function scheduleScrollUpdate() {
-        if (scrollRafId) return;
-        scrollRafId = requestAnimationFrame(function () {
-            scrollRafId = 0;
-            updateScrollArrowVisibility();
+    // ── Unified listener setup / teardown ──
+
+    function cleanupScreenListeners() {
+        if (scrollHintEl && scrollHintEl.parentNode) {
+            scrollHintEl.parentNode.removeChild(scrollHintEl);
+        }
+        scrollHintEl = null;
+        for (var i = 0; i < screenListeners.length; i++) {
+            window.removeEventListener(screenListeners[i].type, screenListeners[i].fn);
+        }
+        screenListeners = [];
+        if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = 0;
+        }
+    }
+
+    function scheduleUpdate() {
+        if (rafId) return;
+        rafId = requestAnimationFrame(function () {
+            rafId = 0;
+            updateStickyState();
+            updateScrollHint();
         });
     }
 
-    function setupScrollHint() {
-        cleanupScrollHint();
-        if (window.innerWidth > 768) return;
+    function setupScreenBehavior() {
+        cleanupScreenListeners();
 
+        // Create scroll hint element
         scrollHintEl = document.createElement('button');
         scrollHintEl.className = 'scroll-hint hidden';
         scrollHintEl.setAttribute('aria-label', 'גלול למטה');
@@ -80,46 +109,41 @@
             window.scrollBy({ top: window.innerHeight * 0.7, behavior: 'smooth' });
         });
 
-        // After fade-out transition ends, fully hide the element
-        scrollHintEl.addEventListener('transitionend', function () {
-            if (scrollHintEl && scrollHintEl.classList.contains('fading-out')) {
-                scrollHintEl.classList.add('hidden');
-                scrollHintEl.classList.remove('fading-out');
-            }
-        });
-
-        var scrollIdleTimer = 0;
+        // Single scroll listener
         var onScroll = function () {
-            scheduleScrollUpdate();
-            if (scrollHintEl) scrollHintEl.classList.add('scrolling');
-            clearTimeout(scrollIdleTimer);
-            scrollIdleTimer = setTimeout(function () {
-                if (scrollHintEl) scrollHintEl.classList.remove('scrolling');
-            }, 300);
+            scheduleUpdate();
         };
-        var onResize = function () { scheduleScrollUpdate(); };
-        var onOrientation = function () { setTimeout(updateScrollArrowVisibility, 200); };
-        window.addEventListener('scroll', onScroll);
+        var onResize = function () {
+            scheduleUpdate();
+        };
+        var onOrientation = function () {
+            setTimeout(scheduleUpdate, 200);
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onResize);
         window.addEventListener('orientationchange', onOrientation);
-        scrollListeners.push({ type: 'scroll', fn: onScroll });
-        scrollListeners.push({ type: 'resize', fn: onResize });
-        scrollListeners.push({ type: 'orientationchange', fn: onOrientation });
+        screenListeners.push({ type: 'scroll', fn: onScroll });
+        screenListeners.push({ type: 'resize', fn: onResize });
+        screenListeners.push({ type: 'orientationchange', fn: onOrientation });
 
-        // Recalculate after layout settles
-        setTimeout(updateScrollArrowVisibility, 100);
-        setTimeout(updateScrollArrowVisibility, 500);
+        // Initial checks after layout settles
+        window.scrollTo(0, 0);
+        setTimeout(scheduleUpdate, 50);
+        setTimeout(scheduleUpdate, 300);
 
-        // Recalculate after images load (handles both fresh and cached)
+        // Recheck after images load
         var images = document.querySelectorAll('.question-image');
         for (var i = 0; i < images.length; i++) {
             if (images[i].complete) {
-                setTimeout(updateScrollArrowVisibility, 0);
+                setTimeout(scheduleUpdate, 0);
             } else {
-                images[i].addEventListener('load', updateScrollArrowVisibility);
+                images[i].addEventListener('load', scheduleUpdate);
             }
         }
     }
+
+    // ── Utility functions ──
 
     function template(str, values) {
         return str.replace(/\{(\w+)\}/g, function (match, key) {
@@ -141,18 +165,26 @@
         return html;
     }
 
-    function getScoreTier(percentage) {
-        var tiers = systemTexts.score_tiers;
-        for (var i = 0; i < tiers.length; i++) {
-            if (percentage >= tiers[i].from) {
-                return tiers[i].text;
-            }
+    function getFinalFeedback(percentage) {
+        var fb = systemTexts.final_feedback;
+        if (!fb) return '';
+        var pool;
+        if (percentage >= 90) {
+            pool = fb.excellent;
+        } else if (percentage >= 75) {
+            pool = fb.good;
+        } else if (percentage >= 60) {
+            pool = fb.fair;
+        } else {
+            pool = fb.encouragement;
         }
-        return '';
+        return (pool && pool.length > 0) ? getRandomItem(pool) : '';
     }
 
+    // ── Screens ──
+
     function showOpening() {
-        cleanupScrollHint();
+        cleanupScreenListeners();
         var ui = systemTexts.interface;
 
         app.innerHTML = '';
@@ -183,6 +215,7 @@
         screen.appendChild(footer);
 
         app.appendChild(screen);
+        setupScreenBehavior();
     }
 
     function showQuestion(index) {
@@ -236,7 +269,7 @@
             imgEl.src = question.image;
             imgEl.alt = '';
             imgEl.addEventListener('load', function () {
-                updateScrollArrowVisibility();
+                scheduleUpdate();
             });
             screen.appendChild(imgEl);
         }
@@ -324,7 +357,7 @@
             lastProgressPct = targetPct;
         });
 
-        setupScrollHint();
+        setupScreenBehavior();
     }
 
     function selectAnswer(ansIndex, isMultiple, answersContainer, confirmBtn) {
@@ -390,10 +423,8 @@
         resultContent.className = 'result-content ' + (isCorrect ? 'result-correct positive-pulse' : 'result-incorrect');
 
         if (isCorrect) {
-            var positiveText = ui.positive_feedback || 'יפה מאוד';
-            if (positiveText.charAt(positiveText.length - 1) !== '!') {
-                positiveText += '!';
-            }
+            var positivePool = ui.positive_feedback;
+            var positiveText = Array.isArray(positivePool) ? getRandomItem(positivePool) : (positivePool || 'יפה מאוד!');
             var symbolSpan = document.createElement('span');
             symbolSpan.className = 'result-symbol';
             symbolSpan.textContent = '✔';
@@ -403,7 +434,8 @@
             feedbackSpan.textContent = positiveText;
             resultContent.appendChild(feedbackSpan);
         } else {
-            var negativeText = ui.negative_feedback || 'לא נורא, העיקר שלומדים.';
+            var negativePool = ui.negative_feedback;
+            var negativeText = Array.isArray(negativePool) ? getRandomItem(negativePool) : (negativePool || 'לא נורא, לומדים מזה.');
             var feedbackSpan2 = document.createElement('span');
             feedbackSpan2.className = 'result-feedback';
             feedbackSpan2.textContent = negativeText;
@@ -495,12 +527,13 @@
             // Phase 3: fade in the new content
             screen.classList.remove('fade-out');
 
-            setupScrollHint();
+            // Re-evaluate sticky + scroll hint for new content
+            setupScreenBehavior();
         }, 260);
     }
 
     function showFinal() {
-        cleanupScrollHint();
+        cleanupScreenListeners();
         var ui = systemTexts.interface;
         var total = quizData.questions.length;
         var percentage = Math.round((score / total) * 100);
@@ -529,7 +562,7 @@
         pctEl.textContent = percentage + '%';
         screen.appendChild(pctEl);
 
-        var evaluation = getScoreTier(percentage);
+        var evaluation = getFinalFeedback(percentage);
         if (evaluation) {
             var evalEl = document.createElement('p');
             evalEl.className = 'final-evaluation';
@@ -538,6 +571,7 @@
         }
 
         app.appendChild(screen);
+        setupScreenBehavior();
     }
 
     showOpening();
