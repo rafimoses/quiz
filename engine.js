@@ -7,7 +7,7 @@
     var systemTexts, quizData;
     try {
         var responses = await Promise.all([
-            fetch('system_texts.json'),
+            fetch('system_texts.json?v=' + Date.now()),
             fetch('quizzes-ready/' + quizSlug + '.json')
         ]);
         systemTexts = await responses[0].json();
