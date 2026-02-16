@@ -30,8 +30,19 @@
     var screenListeners = [];
     var rafId = 0;
 
-    function getRandomItem(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
+    var lastPicked = {};
+
+    function getRandomItem(arr, category) {
+        if (!arr || arr.length === 0) return '';
+        if (arr.length === 1) return arr[0];
+        var last = category ? lastPicked[category] : undefined;
+        var pick;
+        for (var attempts = 0; attempts < 10; attempts++) {
+            pick = arr[Math.floor(Math.random() * arr.length)];
+            if (pick !== last) break;
+        }
+        if (category) lastPicked[category] = pick;
+        return pick;
     }
 
     // ── Scrollability check ──
@@ -170,17 +181,17 @@
     function getFinalFeedback(percentage) {
         var fb = systemTexts.final_feedback;
         if (!fb) return '';
-        var pool;
+        var pool, key;
         if (percentage >= 90) {
-            pool = fb.excellent;
+            pool = fb.excellent; key = 'final_excellent';
         } else if (percentage >= 75) {
-            pool = fb.good;
+            pool = fb.good; key = 'final_good';
         } else if (percentage >= 60) {
-            pool = fb.fair;
+            pool = fb.fair; key = 'final_fair';
         } else {
-            pool = fb.encouragement;
+            pool = fb.encouragement; key = 'final_encouragement';
         }
-        return (pool && pool.length > 0) ? getRandomItem(pool) : '';
+        return (pool && pool.length > 0) ? getRandomItem(pool, key) : '';
     }
 
     // ── Screens ──
@@ -426,7 +437,7 @@
 
         if (isCorrect) {
             var positivePool = ui.positive_feedback;
-            var positiveText = Array.isArray(positivePool) ? getRandomItem(positivePool) : (positivePool || 'יפה מאוד!');
+            var positiveText = Array.isArray(positivePool) ? getRandomItem(positivePool, 'positive') : (positivePool || 'יפה מאוד!');
             var symbolSpan = document.createElement('span');
             symbolSpan.className = 'result-symbol';
             symbolSpan.textContent = '✔';
@@ -437,7 +448,7 @@
             resultContent.appendChild(feedbackSpan);
         } else {
             var negativePool = ui.negative_feedback;
-            var negativeText = Array.isArray(negativePool) ? getRandomItem(negativePool) : (negativePool || 'לא נורא, לומדים מזה.');
+            var negativeText = Array.isArray(negativePool) ? getRandomItem(negativePool, 'negative') : (negativePool || 'לא נורא, לומדים מזה.');
             var feedbackSpan2 = document.createElement('span');
             feedbackSpan2.className = 'result-feedback';
             feedbackSpan2.textContent = negativeText;
