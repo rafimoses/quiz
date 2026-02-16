@@ -46,13 +46,15 @@
         var btn = app.querySelector('.confirm-button, .next-button');
         if (!btn) return;
 
+        var screen = app.querySelector('.screen');
         var scrollable = isPageScrollable();
-        var screen = app.querySelector('.question-screen, .feedback-section');
 
         if (scrollable) {
             btn.classList.add('is-sticky');
+            if (screen) screen.classList.add('has-sticky-btn');
         } else {
             btn.classList.remove('is-sticky');
+            if (screen) screen.classList.remove('has-sticky-btn');
         }
     }
 

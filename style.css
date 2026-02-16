@@ -489,6 +489,28 @@ button {
 
 /* Mobile */
 
+/* Sticky button — only when JS adds .is-sticky */
+
+.confirm-button.is-sticky,
+.next-button.is-sticky {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    z-index: 10;
+    margin: 0;
+    width: auto;
+    max-width: 80vw;
+    display: inline-block;
+    padding: 12px 48px;
+    border-radius: 6px;
+}
+
+.screen.has-sticky-btn {
+    padding-bottom: calc(var(--sticky-btn-height) + 16px);
+}
+
 @media (max-width: 600px) {
     #app {
         padding: 36px 20px;
@@ -504,30 +526,6 @@ button {
     .question-text {
         font-size: 21px;
         line-height: 1.65;
-    }
-
-    .question-screen {
-        padding-bottom: calc(var(--sticky-btn-height) + 16px);
-    }
-
-    .feedback-section {
-        padding-bottom: calc(var(--sticky-btn-height) + 16px);
-    }
-
-    .confirm-button,
-    .next-button {
-        position: fixed;
-        bottom: 12px;
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        z-index: 10;
-        margin: 0;
-        width: auto;
-        max-width: 80vw;
-        display: inline-block;
-        padding: 12px 48px;
-        border-radius: 6px;
     }
 
     .scroll-hint {
