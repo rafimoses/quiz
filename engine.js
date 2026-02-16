@@ -3,12 +3,13 @@
 
     var params = new URLSearchParams(window.location.search);
     var quizSlug = params.get('quiz') || 'quiz-001-sample';
+    var V = Date.now();
 
     var systemTexts, quizData;
     try {
         var responses = await Promise.all([
-            fetch('system_texts.json?v=' + Date.now()),
-            fetch('quizzes-ready/' + quizSlug + '.json')
+            fetch('system_texts.json?v=' + V),
+            fetch('quizzes-ready/' + quizSlug + '.json?v=' + V)
         ]);
         systemTexts = await responses[0].json();
         quizData = await responses[1].json();
