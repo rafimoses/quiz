@@ -453,6 +453,72 @@ button {
     color: #c62828;
 }
 
+/* Confirm Modal */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+}
+
+.modal-dialog {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 28px 32px 24px;
+    max-width: 360px;
+    width: 90vw;
+    direction: rtl;
+    text-align: right;
+}
+
+.modal-message {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 24px;
+    color: #333333;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-buttons button {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.modal-btn-submit {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.modal-btn-submit:hover {
+    filter: brightness(0.9);
+}
+
+.modal-btn-back {
+    background-color: #e8e8e8;
+    color: #555555;
+}
+
+.modal-btn-back:hover {
+    background-color: #ddd;
+}
+
 /* Final Screen */
 
 .final-screen {

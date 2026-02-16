@@ -209,6 +209,58 @@
         return (pool && pool.length > 0) ? getRandomItem(pool, key) : '';
     }
 
+    // ── Modal ──
+
+    function showModal(message, onSubmit, onBack) {
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+
+        var dialog = document.createElement('div');
+        dialog.className = 'modal-dialog';
+
+        var msg = document.createElement('p');
+        msg.className = 'modal-message';
+        msg.textContent = message;
+        dialog.appendChild(msg);
+
+        var buttons = document.createElement('div');
+        buttons.className = 'modal-buttons';
+
+        var submitBtn = document.createElement('button');
+        submitBtn.className = 'modal-btn-submit';
+        submitBtn.textContent = 'להגיש';
+        submitBtn.addEventListener('click', function () {
+            closeModal();
+            onSubmit();
+        });
+
+        var backBtn = document.createElement('button');
+        backBtn.className = 'modal-btn-back';
+        backBtn.textContent = 'לחזור לבחירה';
+        backBtn.addEventListener('click', function () {
+            closeModal();
+            onBack();
+        });
+
+        buttons.appendChild(submitBtn);
+        buttons.appendChild(backBtn);
+        dialog.appendChild(buttons);
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        // Trigger transition
+        requestAnimationFrame(function () {
+            overlay.classList.add('visible');
+        });
+
+        function closeModal() {
+            overlay.classList.remove('visible');
+            setTimeout(function () {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }, 200);
+        }
+    }
+
     // ── Screens ──
 
     function showOpening() {
@@ -415,7 +467,6 @@
     function confirmAnswer(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn) {
         // Guard against double-tap during fade
         if (confirmInProgress) return;
-        confirmInProgress = true;
 
         var ui = systemTexts.interface;
 
@@ -425,6 +476,28 @@
                 correctIndices.add(i);
             }
         }
+
+        // Modal: multi-correct question but user selected only 1 answer
+        if (correctIndices.size > 1 && selectedAnswers.size === 1) {
+            showModal(
+                'בשאלה זו יש יותר מתשובה נכונה אחת. להגיש בכל זאת?',
+                function () {
+                    // Proceed with grading
+                    doGrade(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn, ui, correctIndices);
+                },
+                function () {
+                    // Return to question — do nothing
+                }
+            );
+            return;
+        }
+
+        confirmInProgress = true;
+        doGrade(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn, ui, correctIndices);
+    }
+
+    function doGrade(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn, ui, correctIndices) {
+        confirmInProgress = true;
 
         var isCorrect;
         if (isMultiple) {
@@ -441,6 +514,18 @@
         } else {
             var selectedIndex = selectedAnswers.values().next().value;
             isCorrect = correctIndices.has(selectedIndex);
+        }
+
+        // Check partial success for multi-correct questions
+        var isPartial = false;
+        if (correctIndices.size > 1 && selectedAnswers.size >= 2 && !isCorrect) {
+            var selectedCorrectCount = 0;
+            selectedAnswers.forEach(function (idx) {
+                if (correctIndices.has(idx)) selectedCorrectCount++;
+            });
+            if (selectedCorrectCount >= 1 && selectedCorrectCount < correctIndices.size) {
+                isPartial = true;
+            }
         }
 
         if (isCorrect) score++;
@@ -461,6 +546,13 @@
             feedbackSpan.className = 'result-feedback';
             feedbackSpan.innerHTML = parseExplanation(positiveText);
             resultContent.appendChild(feedbackSpan);
+        } else if (isPartial) {
+            var partialPool = ui.partial_feedback;
+            var partialText = Array.isArray(partialPool) ? getRandomItem(partialPool, 'partial') : (partialPool || 'כמעט...');
+            var feedbackSpanPartial = document.createElement('span');
+            feedbackSpanPartial.className = 'result-feedback';
+            feedbackSpanPartial.innerHTML = parseExplanation(partialText);
+            resultContent.appendChild(feedbackSpanPartial);
         } else {
             var negativePool = ui.negative_feedback;
             var negativeText = Array.isArray(negativePool) ? getRandomItem(negativePool, 'negative') : (negativePool || 'לא נורא, לומדים מזה.');
