@@ -322,12 +322,14 @@ button {
     line-height: 1.65;
 }
 
-/* Per-answer wrong feedback (neutral) */
+/* Wrong feedback (neutral, slightly emphasized) */
 
 .wrong-feedback {
     color: #333333;
-    font-size: 1.15rem;
+    font-size: 1.22rem;
+    font-weight: 500;
     line-height: 1.8;
+    margin-bottom: 1.4em;
 }
 
 /* Question Header */
