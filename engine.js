@@ -193,6 +193,14 @@
         return html;
     }
 
+    function appendPeriod(text) {
+        var trimmed = text.replace(/\s+$/, '');
+        if (!trimmed) return text;
+        var last = trimmed.charAt(trimmed.length - 1);
+        if ('.!?…,:;׃"\')]}\u05F4\u05F3'.indexOf(last) !== -1) return text;
+        return text + '.';
+    }
+
     function getFinalFeedback(percentage) {
         var fb = systemTexts.final_feedback;
         if (!fb) return '';
@@ -602,7 +610,7 @@
                 label.textContent = 'התשובה הנכונה:';
                 var value = document.createElement('span');
                 value.className = 'correct-value';
-                value.innerHTML = ' ' + parseExplanation(correctAnswers[0]);
+                value.innerHTML = ' ' + parseExplanation(appendPeriod(correctAnswers[0]));
                 correctLine.appendChild(label);
                 correctLine.appendChild(value);
                 correctBlock.appendChild(correctLine);
