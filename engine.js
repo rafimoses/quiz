@@ -476,11 +476,8 @@
             confirmAnswer(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn);
         });
 
-        var btnGroup = document.createElement('div');
-        btnGroup.className = 'button-group';
-        btnGroup.appendChild(confirmBtn);
-        if (clearBtn) btnGroup.appendChild(clearBtn);
-        screen.appendChild(btnGroup);
+        screen.appendChild(confirmBtn);
+        if (clearBtn) screen.appendChild(clearBtn);
 
         app.appendChild(screen);
 
@@ -488,6 +485,10 @@
         requestAnimationFrame(function () {
             progressFill.style.width = targetPct + '%';
             lastProgressPct = targetPct;
+            // Match clear button width to confirm button
+            if (clearBtn) {
+                clearBtn.style.width = confirmBtn.offsetWidth + 'px';
+            }
         });
 
         setupScreenBehavior();
@@ -629,8 +630,8 @@
             // Phase 2: swap content while invisible
             answersContainer.remove();
             confirmBtn.remove();
-            var btnGroupEl = screen.querySelector('.button-group');
-            if (btnGroupEl) btnGroupEl.remove();
+            var clearBtnEl = screen.querySelector('.clear-button');
+            if (clearBtnEl) clearBtnEl.remove();
             var multiNoticeEl = screen.querySelector('.multi-notice');
             if (multiNoticeEl) multiNoticeEl.remove();
             var questionHeader = screen.querySelector('.question-header');
