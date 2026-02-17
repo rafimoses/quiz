@@ -241,6 +241,19 @@
         html = html.replace(/--(.+?)--/g, '<span class="marker-incorrect">$1</span>');
         html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        // Strip {{...}} braces (bold only in correct-answers display)
+        html = html.replace(/\{\{(.+?)\}\}/g, '$1');
+        html = html.replace(/\n/g, '<br>');
+        return html;
+    }
+
+    function parseCorrectAnswer(text) {
+        if (!text) return '';
+        var html = escapeHtml(text);
+        // Convert {{...}} to bold for correct-answers display
+        html = html.replace(/\{\{(.+?)\}\}/g, '<strong>$1</strong>');
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
         html = html.replace(/\n/g, '<br>');
         return html;
     }
@@ -718,7 +731,7 @@
                 correctBlock.appendChild(label);
                 var value = document.createElement('p');
                 value.className = 'correct-answer';
-                value.innerHTML = parseExplanation(appendPeriod(correctAnswers[0]));
+                value.innerHTML = parseCorrectAnswer(appendPeriod(correctAnswers[0]));
                 correctBlock.appendChild(value);
             } else if (correctAnswers.length > 1) {
                 var labelOnly = document.createElement('p');
@@ -729,7 +742,7 @@
                 for (var k = 0; k < correctAnswers.length; k++) {
                     var ansEl = document.createElement('p');
                     ansEl.className = 'correct-answer';
-                    ansEl.innerHTML = parseExplanation(appendPeriod(correctAnswers[k]));
+                    ansEl.innerHTML = parseCorrectAnswer(appendPeriod(correctAnswers[k]));
                     correctBlock.appendChild(ansEl);
                 }
             }
