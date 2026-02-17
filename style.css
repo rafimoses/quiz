@@ -165,6 +165,7 @@ button {
 .confirm-button,
 .next-button {
     display: block;
+    width: fit-content;
     margin-left: auto;
     margin-right: auto;
 }
