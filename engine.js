@@ -44,21 +44,29 @@
         app.appendChild(btn);
     }
 
+    var sysUrl = 'system_texts.json?v=' + V;
+    var quizUrl = 'quizzes-ready/' + quizSlug + '.json?v=' + V;
     var systemTexts, quizData;
     try {
         var responses = await Promise.all([
-            fetch('system_texts.json?v=' + V),
-            fetch('quizzes-ready/' + quizSlug + '.json?v=' + V)
+            fetch(sysUrl),
+            fetch(quizUrl)
         ]);
+        if (!responses[0].ok) {
+            throw new Error('system_texts: HTTP ' + responses[0].status);
+        }
         if (!responses[1].ok) {
             if (quizNumber !== null) { showLoadError(quizNumber); return; }
-            throw new Error('Quiz not found');
+            throw new Error('quiz JSON: HTTP ' + responses[1].status);
         }
-        systemTexts = await responses[0].json();
-        quizData = await responses[1].json();
+        try { systemTexts = await responses[0].json(); }
+        catch (pe) { throw new Error('system_texts parse: ' + pe.message); }
+        try { quizData = await responses[1].json(); }
+        catch (pe) { throw new Error('quiz JSON parse (' + quizUrl + '): ' + pe.message); }
     } catch (e) {
         if (quizNumber !== null) { showLoadError(quizNumber); return; }
-        app.textContent = 'שגיאה בטעינת הנתונים.';
+        console.error('Quiz load error:', e.message, '| sysUrl:', sysUrl, '| quizUrl:', quizUrl);
+        app.textContent = 'שגיאה בטעינת הנתונים: ' + e.message;
         return;
     }
 
