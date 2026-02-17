@@ -259,10 +259,11 @@
     }
 
     function appendPeriod(text) {
-        var trimmed = text.replace(/\s+$/, '');
-        if (!trimmed) return text;
-        var last = trimmed.charAt(trimmed.length - 1);
-        if ('.!?…,:;׃"\')]}\u05F4\u05F3'.indexOf(last) !== -1) return text;
+        // Strip markup to find the true last visible character
+        var plain = text.replace(/\{\{|\}\}|\*\*|\*/g, '').replace(/\s+$/, '');
+        if (!plain) return text;
+        var last = plain.charAt(plain.length - 1);
+        if ('.!?…,:;׃"\')]\u05F4\u05F3'.indexOf(last) !== -1) return text;
         return text + '.';
     }
 
