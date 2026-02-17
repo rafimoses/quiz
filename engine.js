@@ -675,7 +675,7 @@
                 for (var k = 0; k < correctAnswers.length; k++) {
                     var ansEl = document.createElement('p');
                     ansEl.className = 'correct-answer';
-                    ansEl.innerHTML = parseExplanation(correctAnswers[k]);
+                    ansEl.innerHTML = parseExplanation(appendPeriod(correctAnswers[k]));
                     correctBlock.appendChild(ansEl);
                 }
             }
