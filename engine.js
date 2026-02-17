@@ -654,12 +654,20 @@
             allSelSpan.innerHTML = 'הלכת על כל הקופה... 😊<br>אבל רק ' + correctIndices.size + ' תשובות נכונות.';
             resultContent.appendChild(allSelSpan);
         } else {
-            var negativePool = ui.negative_feedback;
-            var negativeText = Array.isArray(negativePool) ? getRandomItem(negativePool, 'negative') : (negativePool || 'לא נורא, לומדים מזה.');
-            var feedbackSpan2 = document.createElement('span');
-            feedbackSpan2.className = 'result-feedback';
-            feedbackSpan2.innerHTML = parseExplanation(negativeText);
-            resultContent.appendChild(feedbackSpan2);
+            // Per-answer wrong feedback (neutral style)
+            var wrongLines = [];
+            selectedAnswers.forEach(function (idx) {
+                if (!correctIndices.has(idx) && question.answers[idx].wrong_feedback) {
+                    wrongLines.push(question.answers[idx].wrong_feedback);
+                }
+            });
+            if (wrongLines.length > 0) {
+                resultContent.className = 'result-content';
+                var feedbackSpan2 = document.createElement('span');
+                feedbackSpan2.className = 'result-feedback wrong-feedback';
+                feedbackSpan2.innerHTML = parseExplanation(wrongLines.join('\n'));
+                resultContent.appendChild(feedbackSpan2);
+            }
         }
 
         flipBack.appendChild(resultContent);
