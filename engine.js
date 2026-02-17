@@ -12,9 +12,37 @@
         document.documentElement.classList.remove('pinching');
     }, { passive: true });
 
+    var DEFAULT_SLUG = 'quiz-001-sample';
     var params = new URLSearchParams(window.location.search);
-    var quizSlug = params.get('quiz') || 'quiz-001-sample';
+    var quizParam = params.get('quiz');
+    var quizSlug;
+    var quizNumber = null;
+
+    if (quizParam && /^\d+$/.test(quizParam) && parseInt(quizParam, 10) > 0) {
+        quizNumber = parseInt(quizParam, 10);
+        quizSlug = 'quiz-' + String(quizNumber).padStart(3, '0');
+    } else {
+        quizSlug = quizParam || DEFAULT_SLUG;
+    }
+
     var V = Date.now();
+
+    function showLoadError(num) {
+        app.innerHTML = '';
+        app.style.textAlign = 'center';
+        app.style.direction = 'rtl';
+        var msg = document.createElement('p');
+        msg.style.cssText = 'font-size:1.2rem;margin-bottom:24px;color:#333;';
+        msg.textContent = 'לא נמצא חידון מספר ' + num + '.';
+        app.appendChild(msg);
+        var btn = document.createElement('button');
+        btn.textContent = 'לחידון הראשי';
+        btn.style.cssText = 'font-size:1.08rem;font-weight:500;padding:12px 36px;border:none;border-radius:6px;cursor:pointer;background-color:#6b8fb3;color:#fff;';
+        btn.addEventListener('click', function () {
+            window.location.href = window.location.pathname;
+        });
+        app.appendChild(btn);
+    }
 
     var systemTexts, quizData;
     try {
@@ -22,9 +50,14 @@
             fetch('system_texts.json?v=' + V),
             fetch('quizzes-ready/' + quizSlug + '.json?v=' + V)
         ]);
+        if (!responses[1].ok) {
+            if (quizNumber !== null) { showLoadError(quizNumber); return; }
+            throw new Error('Quiz not found');
+        }
         systemTexts = await responses[0].json();
         quizData = await responses[1].json();
     } catch (e) {
+        if (quizNumber !== null) { showLoadError(quizNumber); return; }
         app.textContent = 'שגיאה בטעינת הנתונים.';
         return;
     }
