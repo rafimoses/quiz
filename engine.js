@@ -662,20 +662,8 @@
             allSelSpan.innerHTML = 'הלכת על כל הקופה... 😊<br>אבל רק ' + correctIndices.size + ' תשובות נכונות.';
             resultContent.appendChild(allSelSpan);
         } else {
-            // Per-answer wrong feedback (neutral style)
-            var wrongLines = [];
-            selectedAnswers.forEach(function (idx) {
-                if (!correctIndices.has(idx) && question.answers[idx].wrong_feedback) {
-                    wrongLines.push(question.answers[idx].wrong_feedback);
-                }
-            });
-            if (wrongLines.length > 0) {
-                resultContent.className = 'result-content';
-                var feedbackSpan2 = document.createElement('span');
-                feedbackSpan2.className = 'result-feedback wrong-feedback';
-                feedbackSpan2.innerHTML = parseExplanation(wrongLines.join('\n'));
-                resultContent.appendChild(feedbackSpan2);
-            }
+            // Fixed wrong-feedback (neutral style, shown in feedback section below)
+            resultContent.className = 'result-content';
         }
 
         flipBack.appendChild(resultContent);
@@ -709,6 +697,14 @@
                 if (question.answers[j].correct) {
                     correctAnswers.push(question.answers[j].text);
                 }
+            }
+
+            // Fixed wrong-feedback sentence for plain wrong answers
+            if (!isCorrect && !isPartial && !isAllSelected) {
+                var wrongMsg = document.createElement('p');
+                wrongMsg.className = 'wrong-feedback';
+                wrongMsg.textContent = 'זו אינה התשובה הנכונה.';
+                feedbackSection.appendChild(wrongMsg);
             }
 
             var correctBlock = document.createElement('div');
