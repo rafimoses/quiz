@@ -475,8 +475,12 @@
         confirmBtn.addEventListener('click', function () {
             confirmAnswer(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn);
         });
-        screen.appendChild(confirmBtn);
-        if (clearBtn) screen.appendChild(clearBtn);
+
+        var btnGroup = document.createElement('div');
+        btnGroup.className = 'button-group';
+        btnGroup.appendChild(confirmBtn);
+        if (clearBtn) btnGroup.appendChild(clearBtn);
+        screen.appendChild(btnGroup);
 
         app.appendChild(screen);
 
@@ -625,10 +629,10 @@
             // Phase 2: swap content while invisible
             answersContainer.remove();
             confirmBtn.remove();
+            var btnGroupEl = screen.querySelector('.button-group');
+            if (btnGroupEl) btnGroupEl.remove();
             var multiNoticeEl = screen.querySelector('.multi-notice');
             if (multiNoticeEl) multiNoticeEl.remove();
-            var clearBtnEl = screen.querySelector('.clear-button');
-            if (clearBtnEl) clearBtnEl.remove();
             var questionHeader = screen.querySelector('.question-header');
             if (questionHeader) questionHeader.remove();
 
