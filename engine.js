@@ -675,8 +675,12 @@
             allSelSpan.innerHTML = 'הלכת על כל הקופה... 😊<br>אבל רק ' + correctIndices.size + ' תשובות נכונות.';
             resultContent.appendChild(allSelSpan);
         } else {
-            // Fixed wrong-feedback (neutral style, shown in feedback section below)
-            resultContent.className = 'result-content';
+            // Fixed wrong-feedback in flip card (same position as positive feedback)
+            resultContent.className = 'result-content result-incorrect';
+            var wrongSpan = document.createElement('span');
+            wrongSpan.className = 'result-feedback wrong-feedback';
+            wrongSpan.textContent = 'זו אינה התשובה הנכונה.';
+            resultContent.appendChild(wrongSpan);
         }
 
         flipBack.appendChild(resultContent);
@@ -710,14 +714,6 @@
                 if (question.answers[j].correct) {
                     correctAnswers.push(question.answers[j].text);
                 }
-            }
-
-            // Fixed wrong-feedback sentence for plain wrong answers
-            if (!isCorrect && !isPartial && !isAllSelected) {
-                var wrongMsg = document.createElement('p');
-                wrongMsg.className = 'wrong-feedback';
-                wrongMsg.textContent = 'זו אינה התשובה הנכונה.';
-                feedbackSection.appendChild(wrongMsg);
             }
 
             var correctBlock = document.createElement('div');
