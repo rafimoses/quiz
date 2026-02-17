@@ -65,8 +65,7 @@
         catch (pe) { throw new Error('quiz JSON parse (' + quizUrl + '): ' + pe.message); }
     } catch (e) {
         if (quizNumber !== null) { showLoadError(quizNumber); return; }
-        console.error('Quiz load error:', e.message, '| sysUrl:', sysUrl, '| quizUrl:', quizUrl);
-        app.textContent = 'שגיאה בטעינת הנתונים: ' + e.message;
+        app.textContent = 'שגיאה בטעינת הנתונים.';
         return;
     }
 
@@ -715,7 +714,6 @@
 
             // Fixed wrong-feedback sentence for plain wrong answers
             if (!isCorrect && !isPartial && !isAllSelected) {
-                console.log('[DEBUG] Rendering fixed wrong-feedback sentence');
                 var wrongMsg = document.createElement('p');
                 wrongMsg.className = 'wrong-feedback';
                 wrongMsg.textContent = 'זו אינה התשובה הנכונה.';
