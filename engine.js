@@ -701,6 +701,7 @@
 
             // Fixed wrong-feedback sentence for plain wrong answers
             if (!isCorrect && !isPartial && !isAllSelected) {
+                console.log('[DEBUG] Rendering fixed wrong-feedback sentence');
                 var wrongMsg = document.createElement('p');
                 wrongMsg.className = 'wrong-feedback';
                 wrongMsg.textContent = 'זו אינה התשובה הנכונה.';
