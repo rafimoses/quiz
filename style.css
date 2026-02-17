@@ -27,6 +27,7 @@ body {
     direction: rtl;
     text-align: right;
     touch-action: manipulation;
+    overscroll-behavior: contain;
 }
 
 #app {
