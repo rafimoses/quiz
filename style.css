@@ -20,6 +20,7 @@ body {
     background-color: #f7f8fa;
     direction: rtl;
     text-align: right;
+    touch-action: manipulation;
 }
 
 #app {
