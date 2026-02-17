@@ -367,7 +367,7 @@
 
         var footer = document.createElement('div');
         footer.className = 'opening-footer';
-        footer.textContent = '© כל הזכויות שמורות. נוצר בידי רפי מוזס וחברו קלוד.';
+        footer.textContent = '© כל הזכויות שמורות. יצרו: רפי מוזס וחברו קלוד.';
         screen.appendChild(footer);
 
         app.appendChild(screen);
