@@ -655,8 +655,9 @@
             // Phase 3: fade in the new content
             screen.classList.remove('fade-out');
 
-            // Re-evaluate sticky + scroll hint for new content
-            setupScreenBehavior();
+            // Re-evaluate sticky + scroll hint after fade-in completes
+            // (avoids layout thrash during animation that stalls the compositor)
+            setTimeout(setupScreenBehavior, 340);
         }, 260);
     }
 
