@@ -12,6 +12,10 @@ html.pinching * {
     animation: none !important;
 }
 
+html {
+    overscroll-behavior: contain;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -176,16 +180,18 @@ button {
 .clear-button {
     display: block;
     margin: 12px auto 0;
-    background: none;
-    border: none;
-    color: #999999;
-    font-size: 0.9rem;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    color: #555555;
+    font-size: 0.95rem;
     cursor: pointer;
-    padding: 6px 16px;
+    padding: 8px 36px;
 }
 
 .clear-button:hover {
-    color: #666666;
+    background-color: #e4e4e4;
+    border-color: #bbb;
 }
 
 /* Progress Indicator */
@@ -362,7 +368,7 @@ button {
 
 .answer-option {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     padding: 12px 0;
     cursor: pointer;
@@ -386,6 +392,7 @@ button {
     border-radius: 50%;
     flex-shrink: 0;
     position: relative;
+    margin-top: 6px;
 }
 
 .answer-option.selected .circle {
