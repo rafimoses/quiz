@@ -577,12 +577,15 @@
 
         // Check partial success for multi-correct questions
         var isPartial = false;
+        var isAllSelected = false;
         if (correctIndices.size > 1 && !isCorrect) {
             var selectedCorrectCount = 0;
             selectedAnswers.forEach(function (idx) {
                 if (correctIndices.has(idx)) selectedCorrectCount++;
             });
-            if (selectedCorrectCount >= 1 && selectedCorrectCount < correctIndices.size) {
+            if (selectedAnswers.size === question.answers.length && correctIndices.size < question.answers.length) {
+                isAllSelected = true;
+            } else if (selectedCorrectCount >= 1 && selectedCorrectCount < correctIndices.size) {
                 isPartial = true;
             }
         }
@@ -612,6 +615,11 @@
             feedbackSpanPartial.className = 'result-feedback';
             feedbackSpanPartial.innerHTML = parseExplanation(partialText);
             resultContent.appendChild(feedbackSpanPartial);
+        } else if (isAllSelected) {
+            var allSelSpan = document.createElement('span');
+            allSelSpan.className = 'result-feedback';
+            allSelSpan.innerHTML = 'הלכת על כל הקופה... 😊<br>אבל רק ' + correctIndices.size + ' תשובות נכונות.';
+            resultContent.appendChild(allSelSpan);
         } else {
             var negativePool = ui.negative_feedback;
             var negativeText = Array.isArray(negativePool) ? getRandomItem(negativePool, 'negative') : (negativePool || 'לא נורא, לומדים מזה.');
