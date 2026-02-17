@@ -754,7 +754,7 @@
             var nextBtn = document.createElement('button');
             nextBtn.className = 'next-button';
             var isLast = currentQuestionIndex === quizData.questions.length - 1;
-            nextBtn.innerHTML = parseExplanation(isLast ? 'איך יצא לי?' : ui.next_button);
+            nextBtn.innerHTML = parseExplanation(isLast ? 'איך הלך לי?' : ui.next_button);
             nextBtn.addEventListener('click', function () {
                 if (isLast) {
                     showFinal();
