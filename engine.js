@@ -212,10 +212,12 @@
         return text + '.';
     }
 
+    var encouragementEmojis = ['🌤️', '✨', '😊', '🌈'];
+
     function getFinalFeedback(percentage) {
         var fb = systemTexts.final_feedback;
-        if (!fb) return '';
-        var pool, key;
+        if (!fb) return { text: '', isEncouragement: false };
+        var pool, key, isEnc = false;
         if (percentage >= 90) {
             pool = fb.excellent; key = 'final_excellent';
         } else if (percentage >= 75) {
@@ -223,9 +225,10 @@
         } else if (percentage >= 60) {
             pool = fb.fair; key = 'final_fair';
         } else {
-            pool = fb.encouragement; key = 'final_encouragement';
+            pool = fb.encouragement; key = 'final_encouragement'; isEnc = true;
         }
-        return (pool && pool.length > 0) ? getRandomItem(pool, key) : '';
+        var text = (pool && pool.length > 0) ? getRandomItem(pool, key) : '';
+        return { text: text, isEncouragement: isEnc };
     }
 
     // ── Modal ──
@@ -409,6 +412,14 @@
 
         screen.appendChild(questionHeader);
 
+        // Multi-correct notice
+        if (isMultiple) {
+            var multiNotice = document.createElement('p');
+            multiNotice.className = 'multi-notice';
+            multiNotice.textContent = 'יש יותר מתשובה נכונה אחת.';
+            screen.appendChild(multiNotice);
+        }
+
         // Answers
         var answersContainer = document.createElement('div');
         answersContainer.className = 'answers-container';
@@ -417,6 +428,24 @@
         confirmBtn.className = 'confirm-button';
         confirmBtn.innerHTML = parseExplanation(ui.confirm_button);
         confirmBtn.disabled = true;
+
+        // Clear button (multi-correct only)
+        var clearBtn = null;
+        if (isMultiple) {
+            clearBtn = document.createElement('button');
+            clearBtn.className = 'clear-button';
+            clearBtn.textContent = 'ניקוי הבחירות';
+            clearBtn.style.display = 'none';
+            clearBtn.addEventListener('click', function () {
+                selectedAnswers.clear();
+                var options = answersContainer.querySelectorAll('.answer-option');
+                for (var i = 0; i < options.length; i++) {
+                    options[i].classList.remove('selected');
+                }
+                confirmBtn.disabled = true;
+                clearBtn.style.display = 'none';
+            });
+        }
 
         for (var a = 0; a < question.answers.length; a++) {
             (function (ansIndex) {
@@ -434,7 +463,7 @@
                 option.appendChild(text);
 
                 option.addEventListener('click', function () {
-                    selectAnswer(ansIndex, isMultiple, answersContainer, confirmBtn);
+                    selectAnswer(ansIndex, isMultiple, answersContainer, confirmBtn, clearBtn);
                 });
 
                 answersContainer.appendChild(option);
@@ -447,6 +476,7 @@
             confirmAnswer(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn);
         });
         screen.appendChild(confirmBtn);
+        if (clearBtn) screen.appendChild(clearBtn);
 
         app.appendChild(screen);
 
@@ -459,7 +489,7 @@
         setupScreenBehavior();
     }
 
-    function selectAnswer(ansIndex, isMultiple, answersContainer, confirmBtn) {
+    function selectAnswer(ansIndex, isMultiple, answersContainer, confirmBtn, clearBtn) {
         if (isMultiple) {
             if (selectedAnswers.has(ansIndex)) {
                 selectedAnswers.delete(ansIndex);
@@ -481,6 +511,11 @@
         }
 
         confirmBtn.disabled = selectedAnswers.size === 0;
+
+        // Show/hide clear button for multi-correct
+        if (clearBtn) {
+            clearBtn.style.display = (isMultiple && selectedAnswers.size > 1) ? '' : 'none';
+        }
     }
 
     function confirmAnswer(question, isMultiple, flipContainer, flipCard, flipBack, screen, answersContainer, confirmBtn) {
@@ -590,6 +625,10 @@
             // Phase 2: swap content while invisible
             answersContainer.remove();
             confirmBtn.remove();
+            var multiNoticeEl = screen.querySelector('.multi-notice');
+            if (multiNoticeEl) multiNoticeEl.remove();
+            var clearBtnEl = screen.querySelector('.clear-button');
+            if (clearBtnEl) clearBtnEl.remove();
             var questionHeader = screen.querySelector('.question-header');
             if (questionHeader) questionHeader.remove();
 
@@ -614,17 +653,14 @@
             correctBlock.className = 'correct-block';
 
             if (correctAnswers.length === 1) {
-                var correctLine = document.createElement('p');
-                correctLine.className = 'correct-line';
-                var label = document.createElement('span');
-                label.className = 'correct-label';
+                var label = document.createElement('p');
+                label.className = 'correct-label-only';
                 label.textContent = 'התשובה הנכונה:';
-                var value = document.createElement('span');
-                value.className = 'correct-value';
-                value.innerHTML = ' ' + parseExplanation(appendPeriod(correctAnswers[0]));
-                correctLine.appendChild(label);
-                correctLine.appendChild(value);
-                correctBlock.appendChild(correctLine);
+                correctBlock.appendChild(label);
+                var value = document.createElement('p');
+                value.className = 'correct-answer';
+                value.innerHTML = parseExplanation(appendPeriod(correctAnswers[0]));
+                correctBlock.appendChild(value);
             } else if (correctAnswers.length > 1) {
                 var labelOnly = document.createElement('p');
                 labelOnly.className = 'correct-label-only';
@@ -702,11 +738,15 @@
         pctEl.textContent = percentage + '%';
         screen.appendChild(pctEl);
 
-        var evaluation = getFinalFeedback(percentage);
-        if (evaluation) {
+        var evalResult = getFinalFeedback(percentage);
+        if (evalResult.text) {
+            var evalText = evalResult.text;
+            if (evalResult.isEncouragement) {
+                evalText += ' ' + encouragementEmojis[Math.floor(Math.random() * encouragementEmojis.length)];
+            }
             var evalEl = document.createElement('p');
             evalEl.className = 'final-evaluation';
-            evalEl.innerHTML = parseExplanation(evaluation);
+            evalEl.innerHTML = parseExplanation(evalText);
             screen.appendChild(evalEl);
         }
 
