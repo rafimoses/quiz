@@ -6,6 +6,12 @@
     --sticky-btn-height: 52px;
 }
 
+/* Suspend animations/transitions during pinch zoom */
+html.pinching * {
+    transition: none !important;
+    animation: none !important;
+}
+
 * {
     margin: 0;
     padding: 0;

@@ -1,6 +1,17 @@
 (async function () {
     var app = document.getElementById('app');
 
+    // Disable transitions/animations during pinch zoom
+    document.addEventListener('touchstart', function (e) {
+        if (e.touches.length >= 2) document.documentElement.classList.add('pinching');
+    }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+        if (e.touches.length < 2) document.documentElement.classList.remove('pinching');
+    }, { passive: true });
+    document.addEventListener('touchcancel', function () {
+        document.documentElement.classList.remove('pinching');
+    }, { passive: true });
+
     var params = new URLSearchParams(window.location.search);
     var quizSlug = params.get('quiz') || 'quiz-001-sample';
     var V = Date.now();
