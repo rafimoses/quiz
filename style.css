@@ -403,7 +403,7 @@ button {
     border-radius: 50%;
     flex-shrink: 0;
     position: relative;
-    margin-top: 9px;
+    margin-top: 8px;
 }
 
 .answer-option.selected .circle {
